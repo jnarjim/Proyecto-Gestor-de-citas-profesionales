@@ -2,6 +2,7 @@ from rest_framework import generics, permissions, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.exceptions import ValidationError
 
 from .models import Cita
 from .serializers import CitaSerializer, CrearCitaSerializer
@@ -34,8 +35,28 @@ class CrearCitaView(generics.CreateAPIView):
 
     def perform_create(self, serializer):
         user = self.request.user
+
+        # Validación: solo profesionales
         if not user.is_professional:
             raise permissions.PermissionDenied("Solo los profesionales pueden crear citas")
+
+        fecha = serializer.validated_data['fecha']
+        hora = serializer.validated_data['hora']
+
+        # Validación: evitar choques de horarios
+        choque = Cita.objects.filter(
+            profesional=user,
+            fecha=fecha,
+            hora=hora,
+            estado__in=["pendiente", "confirmada"]  # si está cancelada, no afecta
+        ).exists()
+
+        if choque:
+            raise ValidationError(
+                "Ya existe una cita en esa fecha y hora."
+            )
+
+        # Si todo va bien → crear la cita
         serializer.save(profesional=user)
 
 class ReservarCitaView(APIView):
