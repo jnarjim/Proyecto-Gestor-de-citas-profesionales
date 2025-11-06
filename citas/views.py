@@ -63,3 +63,54 @@ class ReservarCitaView(APIView):
         cita.save()
 
         return Response({"detail": "Cita reservada correctamente"}, status=status.HTTP_200_OK)
+
+class CancelarCitaView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, cita_id):
+        user = request.user
+        cita = get_object_or_404(Cita, id=cita_id)
+
+        # CASO 1: Cliente cancela su propia cita
+        if not user.is_professional:
+
+            # El cliente solo puede cancelar citas suyas
+            if cita.cliente != user:
+                return Response(
+                    {"detail": "No puedes cancelar una cita que no es tuya."},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+
+            # Si el profesional PERMITE reabrir citas → queda libre
+            if cita.profesional.permite_reabrir_citas:
+                cita.cliente = None
+                cita.estado = "pendiente"
+
+            # Si NO permite reabrir → pasa a cancelada y NO queda libre
+            else:
+                cita.estado = "cancelada"
+
+            cita.save()
+
+            return Response(
+                {"detail": "Has cancelado tu cita correctamente."},
+                status=status.HTTP_200_OK
+            )
+
+        # CASO 2: Profesional cancela una cita suya
+        else:
+
+            # Un profesional no puede cancelar citas de otro profesional
+            if cita.profesional != user:
+                return Response(
+                    {"detail": "No puedes cancelar una cita de otro profesional."},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+
+            cita.estado = "cancelada"
+            cita.save()
+
+            return Response(
+                {"detail": "Has cancelado la cita de tu agenda."},
+                status=status.HTTP_200_OK
+            )

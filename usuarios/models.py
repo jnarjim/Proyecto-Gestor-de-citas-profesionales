@@ -13,6 +13,11 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField('activo', default=True)
     date_joined = models.DateTimeField('fecha de registro', auto_now_add=True)
 
+    permite_reabrir_citas = models.BooleanField(
+        default=True,
+        help_text="Si está activo, una cita cancelada vuelve a quedar disponible."
+    )
+
     objects = CustomUserManager()
 
     USERNAME_FIELD = 'email'

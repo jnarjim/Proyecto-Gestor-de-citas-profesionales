@@ -11,11 +11,19 @@ class CustomUserAdmin(UserAdmin):
     search_fields = ('email', 'first_name', 'last_name')
     ordering = ('email',)
 
+    readonly_fields = ('last_login', 'date_joined')
+
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
-        (_('Personal info'), {'fields': ('first_name', 'last_name', 'phone', 'bio', 'is_professional')}),
-        (_('Permissions'), {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
-        (_('Important dates'), {'fields': ('last_login', 'date_joined')}),
+        (_('Personal info'), {
+            'fields': ('first_name', 'last_name', 'phone', 'bio', 'is_professional', 'permite_reabrir_citas')
+        }),
+        (_('Permissions'), {
+            'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')
+        }),
+        (_('Important dates'), {
+            'fields': ('last_login', 'date_joined')
+        }),
     )
 
     add_fieldsets = (
