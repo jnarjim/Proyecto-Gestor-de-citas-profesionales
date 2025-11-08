@@ -24,10 +24,19 @@ class MisCitasView(generics.ListAPIView):
     def get_queryset(self):
         user = self.request.user
 
+        # Base queryset según tipo de usuario
         if user.is_professional:
-            return Cita.objects.filter(profesional=user)
+            queryset = Cita.objects.filter(profesional=user)
         else:
-            return Cita.objects.filter(cliente=user)
+            queryset = Cita.objects.filter(cliente=user)
+
+        # Filtrado opcional por uno o varios estados
+        estado = self.request.query_params.get("estado")
+        if estado:
+            estados = [e.strip() for e in estado.split(",")]
+            queryset = queryset.filter(estado__in=estados)
+
+        return queryset
 
 class CrearCitaView(generics.CreateAPIView):
     serializer_class = CrearCitaSerializer
@@ -135,3 +144,82 @@ class CancelarCitaView(APIView):
                 {"detail": "Has cancelado la cita de tu agenda."},
                 status=status.HTTP_200_OK
             )
+
+class CompletarCitaView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, cita_id):
+        user = request.user
+
+        # Solo profesionales pueden completar citas
+        if not user.is_professional:
+            return Response(
+                {"detail": "Solo los profesionales pueden completar citas."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        # Obtener la cita
+        cita = get_object_or_404(Cita, id=cita_id)
+
+        # Solo puede completar sus propias citas
+        if cita.profesional != user:
+            return Response(
+                {"detail": "No puedes completar citas que no son tuyas."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        # Solo citas confirmadas pueden ser completadas
+        if cita.estado != "confirmada":
+            return Response(
+                {"detail": "Solo puedes completar citas que están confirmadas."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Completar la cita
+        cita.estado = "completada"
+        cita.save()
+
+        return Response(
+            {"detail": "Cita marcada como completada."},
+            status=status.HTTP_200_OK
+        )
+
+from django.utils.dateparse import parse_date
+
+class CitasDisponiblesGlobalView(generics.ListAPIView):
+    serializer_class = CitaSerializer
+
+    def get_queryset(self):
+        queryset = Cita.objects.filter(cliente__isnull=True)
+
+        # Filtrado por estados opcional
+        estados = self.request.query_params.get("estado")
+        if estados:
+            estados_list = [e.strip() for e in estados.split(",")]
+            queryset = queryset.filter(estado__in=estados_list)
+        else:
+            # Por defecto, solo pendientes
+            queryset = queryset.filter(estado="pendiente")
+
+        # Filtrado por fecha
+        fecha = self.request.query_params.get("fecha")
+        fecha_inicio = self.request.query_params.get("fecha_inicio")
+        fecha_fin = self.request.query_params.get("fecha_fin")
+
+        if fecha:
+            fecha_obj = parse_date(fecha)
+            if fecha_obj:
+                queryset = queryset.filter(fecha=fecha_obj)
+
+        if fecha_inicio and fecha_fin:
+            fecha_inicio_obj = parse_date(fecha_inicio)
+            fecha_fin_obj = parse_date(fecha_fin)
+            if fecha_inicio_obj and fecha_fin_obj:
+                queryset = queryset.filter(fecha__range=(fecha_inicio_obj, fecha_fin_obj))
+
+        # Filtrado por profesional
+        profesional_id = self.request.query_params.get("profesional_id")
+        if profesional_id:
+            queryset = queryset.filter(profesional_id=profesional_id)
+
+        return queryset
