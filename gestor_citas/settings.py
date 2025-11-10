@@ -33,6 +33,7 @@ ALLOWED_HOSTS = []
 INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'rest_framework',
+    'notificaciones.apps.NotificacionesConfig',
     'citas.apps.CitasConfig',
     'usuarios.apps.UsuariosConfig',
     'django.contrib.admin',
