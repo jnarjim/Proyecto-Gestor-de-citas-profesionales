@@ -7,6 +7,8 @@ from rest_framework.exceptions import ValidationError
 from .models import Cita
 from .serializers import CitaSerializer, CrearCitaSerializer
 from django.shortcuts import get_object_or_404
+from datetime import date, datetime
+from django.utils.dateparse import parse_time
 
 
 class CitasDisponiblesProfesionalView(generics.ListAPIView):
@@ -14,7 +16,18 @@ class CitasDisponiblesProfesionalView(generics.ListAPIView):
 
     def get_queryset(self):
         profesional_id = self.kwargs['profesional_id']
-        return Cita.objects.filter(profesional_id=profesional_id, cliente__isnull=True)
+        queryset = Cita.objects.filter(profesional_id=profesional_id, cliente__isnull=True)
+
+        # Filtrado opcional por rango de horas
+        hora_inicio = self.request.query_params.get("hora_inicio")
+        hora_fin = self.request.query_params.get("hora_fin")
+        if hora_inicio and hora_fin:
+            hora_inicio_obj = parse_time(hora_inicio)
+            hora_fin_obj = parse_time(hora_fin)
+            if hora_inicio_obj and hora_fin_obj:
+                queryset = queryset.filter(hora__gte=hora_inicio_obj, hora__lte=hora_fin_obj)
+
+        return queryset.order_by("fecha", "hora")
 
 
 class MisCitasView(generics.ListAPIView):
@@ -36,7 +49,21 @@ class MisCitasView(generics.ListAPIView):
             estados = [e.strip() for e in estado.split(",")]
             queryset = queryset.filter(estado__in=estados)
 
-        return queryset
+        # Filtrado opcional por rango de horas
+        hora_inicio = self.request.query_params.get("hora_inicio")
+        hora_fin = self.request.query_params.get("hora_fin")
+        if hora_inicio and hora_fin:
+            hora_inicio_obj = parse_time(hora_inicio)
+            hora_fin_obj = parse_time(hora_fin)
+            if hora_inicio_obj and hora_fin_obj:
+                queryset = queryset.filter(hora__gte=hora_inicio_obj, hora__lte=hora_fin_obj)
+
+        # Excluir horas pasadas si la fecha es hoy
+        hoy = date.today()
+        if queryset.exists():
+            queryset = queryset.exclude(fecha=hoy, hora__lt=datetime.now().time())
+
+        return queryset.order_by("fecha", "hora")
 
 class CrearCitaView(generics.CreateAPIView):
     serializer_class = CrearCitaSerializer
@@ -45,14 +72,22 @@ class CrearCitaView(generics.CreateAPIView):
     def perform_create(self, serializer):
         user = self.request.user
 
-        # Validación: solo profesionales
+        # Solo profesionales
         if not user.is_professional:
             raise permissions.PermissionDenied("Solo los profesionales pueden crear citas")
 
         fecha = serializer.validated_data['fecha']
         hora = serializer.validated_data['hora']
 
-        # Validación: evitar choques de horarios
+        # No crear citas en fechas pasadas
+        if fecha < date.today():
+            raise ValidationError("No puedes crear una cita en una fecha pasada.")
+
+        # Si se crea el mismo dia no se permite en horas pasadas
+        if fecha == date.today() and hora < datetime.now().time():
+            raise ValidationError("No puedes crear una cita en una hora pasada.")
+
+        # Evitar choques de horarios
         choque = Cita.objects.filter(
             profesional=user,
             fecha=fecha,
@@ -65,7 +100,7 @@ class CrearCitaView(generics.CreateAPIView):
                 "Ya existe una cita en esa fecha y hora."
             )
 
-        # Si todo va bien → crear la cita
+        # Crear la cita
         serializer.save(profesional=user)
 
 class ReservarCitaView(APIView):
@@ -81,6 +116,13 @@ class ReservarCitaView(APIView):
 
         # Obtener la cita
         cita = get_object_or_404(Cita, id=cita_id)
+
+        # Validar que la cita no sea de una fecha pasada
+        if cita.fecha < date.today():
+            return Response(
+                {"detail": "No puedes reservar una cita en una fecha pasada."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         # Verificar si ya está reservada
         if cita.cliente is not None:
@@ -100,6 +142,13 @@ class CancelarCitaView(APIView):
     def post(self, request, cita_id):
         user = request.user
         cita = get_object_or_404(Cita, id=cita_id)
+
+        #  No permitir cancelar citas pasadas
+        if cita.fecha < date.today():
+            return Response(
+                {"detail": "No puedes cancelar una cita en una fecha pasada."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         # CASO 1: Cliente cancela su propia cita
         if not user.is_professional:
@@ -161,6 +210,13 @@ class CompletarCitaView(APIView):
         # Obtener la cita
         cita = get_object_or_404(Cita, id=cita_id)
 
+        # No permitir completar citas pasadas que no estén confirmadas
+        if cita.fecha < date.today() and cita.estado != "confirmada":
+            return Response(
+                {"detail": "No puedes completar una cita pasada que no estuvo confirmada."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
         # Solo puede completar sus propias citas
         if cita.profesional != user:
             return Response(
@@ -217,9 +273,22 @@ class CitasDisponiblesGlobalView(generics.ListAPIView):
             if fecha_inicio_obj and fecha_fin_obj:
                 queryset = queryset.filter(fecha__range=(fecha_inicio_obj, fecha_fin_obj))
 
+        # Filtrado por hora
+        hora_inicio = self.request.query_params.get("hora_inicio")
+        hora_fin = self.request.query_params.get("hora_fin")
+        if hora_inicio and hora_fin:
+            hora_inicio_obj = parse_time(hora_inicio)
+            hora_fin_obj = parse_time(hora_fin)
+            if hora_inicio_obj and hora_fin_obj:
+                queryset = queryset.filter(hora__gte=hora_inicio_obj, hora__lte=hora_fin_obj)
+
         # Filtrado por profesional
         profesional_id = self.request.query_params.get("profesional_id")
         if profesional_id:
             queryset = queryset.filter(profesional_id=profesional_id)
 
-        return queryset
+        # Excluir horas pasadas si la fecha es hoy
+        hoy = date.today()
+        queryset = queryset.exclude(fecha=hoy, hora__lt=datetime.now().time())
+
+        return queryset.order_by("fecha", "hora")
