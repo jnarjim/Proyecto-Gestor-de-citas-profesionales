@@ -8,6 +8,13 @@ class Notificacion(models.Model):
         on_delete=models.CASCADE,
         related_name="notificaciones"
     )
+    emisor = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="notificaciones_emitidas"
+    )
     cita = models.ForeignKey(
         Cita,
         on_delete=models.CASCADE,
@@ -29,4 +36,4 @@ class Notificacion(models.Model):
     creada_en = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Notificación para {self.receptor} - {self.tipo}"
+        return f"{self.tipo} para {self.receptor} ({self.creada_en.strftime('%Y-%m-%d %H:%M')})"
