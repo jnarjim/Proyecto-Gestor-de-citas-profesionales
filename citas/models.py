@@ -12,7 +12,8 @@ class Cita(models.Model):
     profesional = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name='citas_profesional'
+        related_name='citas_profesional',
+        db_index=True
     )
 
     cliente = models.ForeignKey(
@@ -20,11 +21,12 @@ class Cita(models.Model):
         on_delete=models.CASCADE,
         related_name='citas_cliente',
         null=True,
-        blank=True
+        blank=True,
+        db_index=True
     )
 
-    fecha = models.DateField()
-    hora = models.TimeField()
+    fecha = models.DateField(db_index=True)
+    hora = models.TimeField(db_index=True)
     duracion = models.IntegerField(default=30)  #minutos
     estado = models.CharField(max_length=20, choices=ESTADOS, default='pendiente')
     creada_en = models.DateTimeField(auto_now_add=True)

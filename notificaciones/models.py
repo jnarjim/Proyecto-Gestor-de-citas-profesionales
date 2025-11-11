@@ -6,7 +6,8 @@ class Notificacion(models.Model):
     receptor = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name="notificaciones"
+        related_name="notificaciones",
+        db_index=True
     )
     emisor = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -33,7 +34,7 @@ class Notificacion(models.Model):
     )
     mensaje = models.TextField()
     leido = models.BooleanField(default=False)
-    creada_en = models.DateTimeField(auto_now_add=True)
+    creada_en = models.DateTimeField(auto_now_add=True, db_index=True)
 
     def __str__(self):
         return f"{self.tipo} para {self.receptor} ({self.creada_en.strftime('%Y-%m-%d %H:%M')})"
