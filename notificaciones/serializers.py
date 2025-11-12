@@ -13,6 +13,8 @@ class NotificacionSerializer(serializers.ModelSerializer):
             "id",
             "receptor",
             "receptor_nombre",
+            "emisor",
+            "emisor_nombre",
             "cita_id",
             "tipo",
             "mensaje",
