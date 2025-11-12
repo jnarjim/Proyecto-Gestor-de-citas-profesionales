@@ -1,4 +1,5 @@
 from django.urls import path
+from . import views
 from .views import CitasDisponiblesProfesionalView, MisCitasView, CrearCitaView, ReservarCitaView, CancelarCitaView, CompletarCitaView, CitasDisponiblesGlobalView
 
 urlpatterns = [
@@ -9,4 +10,5 @@ urlpatterns = [
     path('<int:cita_id>/cancelar/', CancelarCitaView.as_view(), name='cancelar_cita'),
     path('<int:cita_id>/completar/', CompletarCitaView.as_view(), name='completar_cita'),
     path('disponibles/', CitasDisponiblesGlobalView.as_view(), name='citas_disponibles_global'),
+    path('', views.index, name='index'),
 ]

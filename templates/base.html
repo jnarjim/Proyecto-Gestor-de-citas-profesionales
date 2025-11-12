@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Gestor de Citas{% endblock %}</title>
+    <!-- Tailwind CSS desde CDN (opcional para estilos rápidos) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- HTMX para interacciones -->
+    <script src="https://unpkg.com/htmx.org@1.9.3"></script>
+    <!-- Alpine.js para reactividad -->
+    <script src="https://unpkg.com/alpinejs@3.12.0/dist/cdn.min.js" defer></script>
+</head>
+<body class="bg-gray-100 font-sans">
+
+    <!-- Header -->
+    <header class="bg-blue-600 text-white p-4">
+        <h1 class="text-xl font-bold">Gestor de Citas</h1>
+        <nav>
+            <a href="{% url 'index' %}" class="mr-4">Inicio</a>
+            <a href="{% url 'listar_citas' %}" class="mr-4">Mis Citas</a>
+            <a href="{% url 'listar_notificaciones' %}">Notificaciones</a>
+        </nav>
+    </header>
+
+    <!-- Contenedor principal -->
+    <main class="p-6">
+        {% block content %}
+        <!-- Aquí se insertará el contenido de cada página -->
+        {% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-200 text-center p-4 mt-6">
+        &copy; 2025 Gestor de Citas
+    </footer>
+
+</body>
+</html>
