@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Mis Citas{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto bg-white p-6 rounded shadow">
+    <h2 class="text-2xl font-bold mb-4">Mis citas</h2>
+    <ul id="mis-citas-list" class="list-disc pl-5">
+        <li>Cargando citas...</li>
+    </ul>
+</div>
+
+<script type="module">
+import { getProfile, refreshToken } from '/static/js/auth.js';
+
+async function cargarMisCitas() {
+    const token = localStorage.getItem('access');
+    if (!token) return;
+
+    try {
+        const res = await fetch('/api/citas/mis-citas/', {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+
+        if (res.status === 401) {
+            const refreshed = await refreshToken();
+            if (refreshed) return cargarMisCitas();
+            else return;
+        }
+
+        const citas = await res.json();
+        const ul = document.getElementById('mis-citas-list');
+        ul.innerHTML = '';
+
+        if (citas.length === 0) {
+            ul.innerHTML = '<li>No tienes citas.</li>';
+            return;
+        }
+
+        citas.forEach(cita => {
+            const li = document.createElement('li');
+            li.textContent = `${cita.fecha} a las ${cita.hora} con ${cita.profesional ? cita.profesional.first_name : cita.cliente.first_name} - Estado: ${cita.estado}`;
+            ul.appendChild(li);
+        });
+
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+async function init() {
+    const perfil = await getProfile();
+    if (!perfil) {
+        window.location.href = '/login/';
+        return;
+    }
+
+    cargarMisCitas();
+}
+
+init();
+</script>
+{% endblock %}

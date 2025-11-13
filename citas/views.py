@@ -11,24 +11,11 @@ from django.shortcuts import get_object_or_404, render
 from datetime import date, datetime
 from django.utils.dateparse import parse_time
 
-
 def index(request):
-    if request.user.is_authenticated:
-        if request.user.is_professional:
-            proximas_citas = Cita.objects.filter(
-                profesional=request.user,
-                fecha__gte=date.today()
-            ).order_by("fecha", "hora")[:5]
-        else:
-            proximas_citas = Cita.objects.filter(
-                cliente=request.user,
-                fecha__gte=date.today()
-            ).order_by("fecha", "hora")[:5]
-    else:
-        proximas_citas = []
+    return render(request, "index.html")
 
-    return render(request, "index.html", {"proximas_citas": proximas_citas})
-
+def listar_citas(request):
+    return render(request, 'citas/listar_citas.html')
 
 class CitasDisponiblesProfesionalView(generics.ListAPIView):
     serializer_class = CitaSerializer

@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}Registro{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto bg-white p-6 rounded shadow mt-6">
+    <h2 class="text-2xl font-bold mb-4 text-center">Registro</h2>
+
+    <form id="registro-form">
+        <input type="text" name="first_name" placeholder="Nombre" class="w-full p-2 mb-2 border rounded" required>
+        <input type="text" name="last_name" placeholder="Apellido" class="w-full p-2 mb-2 border rounded" required>
+        <input type="email" name="email" placeholder="Email" class="w-full p-2 mb-2 border rounded" required>
+        <input type="password" name="password" placeholder="Contraseña" class="w-full p-2 mb-2 border rounded" required>
+        <button type="submit" class="w-full bg-green-600 text-white p-2 rounded hover:bg-green-700">Registrarse</button>
+    </form>
+
+    <div id="registro-mensaje" class="mt-2 text-center text-red-500"></div>
+</div>
+
+<script>
+document.getElementById('registro-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const data = {
+        first_name: form.first_name.value,
+        last_name: form.last_name.value,
+        email: form.email.value,
+        password: form.password.value
+    };
+
+    try {
+        const response = await fetch('/api/usuarios/register/', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+            // Mensaje en verde
+            const msgDiv = document.getElementById('registro-mensaje');
+            msgDiv.classList.remove('text-red-500');
+            msgDiv.classList.add('text-green-500');
+            msgDiv.innerText = result.message || 'Usuario registrado correctamente';
+
+            // Redirigir al login después de 1.5s
+            setTimeout(() => { window.location.href = '/login/'; }, 1500);
+        } else {
+            document.getElementById('registro-mensaje').innerText = result.message || result.detail || 'Error en registro';
+        }
+    } catch (err) {
+        document.getElementById('registro-mensaje').innerText = 'Error de conexión';
+        console.error(err);
+    }
+});
+</script>
+{% endblock %}

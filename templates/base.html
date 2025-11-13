@@ -1,39 +1,72 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Gestor de Citas{% endblock %}</title>
-    <!-- Tailwind CSS desde CDN (opcional para estilos rápidos) -->
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- HTMX para interacciones -->
+    <!-- HTMX -->
     <script src="https://unpkg.com/htmx.org@1.9.3"></script>
-    <!-- Alpine.js para reactividad -->
+    <!-- Alpine.js -->
     <script src="https://unpkg.com/alpinejs@3.12.0/dist/cdn.min.js" defer></script>
 </head>
 <body class="bg-gray-100 font-sans">
 
     <!-- Header -->
-    <header class="bg-blue-600 text-white p-4">
+    <header class="bg-blue-600 text-white p-4 flex justify-between items-center">
         <h1 class="text-xl font-bold">Gestor de Citas</h1>
-        <nav>
-            <a href="{% url 'index' %}" class="mr-4">Inicio</a>
-            <a href="{% url 'listar_citas' %}" class="mr-4">Mis Citas</a>
-            <a href="{% url 'listar_notificaciones' %}">Notificaciones</a>
+
+        <!-- Menú dinámico según login -->
+        <nav x-data="{ loggedIn: localStorage.getItem('access') ? true : false }" class="space-x-4">
+            <a href="index.html" class="hover:underline">Inicio</a>
+
+            <!-- Solo para usuarios logueados -->
+            <template x-if="loggedIn">
+                <a href="mis_citas.html" class="hover:underline">Mis Citas</a>
+            </template>
+            <template x-if="loggedIn">
+                <a href="notificaciones.html" class="hover:underline">Notificaciones</a>
+            </template>
+
+            <!-- Solo para usuarios no logueados -->
+            <template x-if="!loggedIn">
+                <a href="usuarios/login.html" class="hover:underline">Login</a>
+            </template>
+
+            <!-- Botón de logout -->
+            <template x-if="loggedIn">
+                <button @click="localStorage.removeItem('access'); localStorage.removeItem('refresh'); loggedIn=false; window.location='index.html';"
+                        class="bg-red-500 px-2 py-1 rounded hover:bg-red-600">
+                    Logout
+                </button>
+            </template>
         </nav>
     </header>
 
     <!-- Contenedor principal -->
     <main class="p-6">
-        {% block content %}
-        <!-- Aquí se insertará el contenido de cada página -->
-        {% endblock %}
+        {% block content %}{% endblock %}
     </main>
+
+    <!-- Notificaciones dinámicas -->
+    <div x-data="{ message: '', show: false }"
+         x-show="show"
+         x-text="message"
+         class="fixed top-4 right-4 bg-green-500 text-white p-2 rounded shadow"
+         x-transition>
+    </div>
 
     <!-- Footer -->
     <footer class="bg-gray-200 text-center p-4 mt-6">
         &copy; 2025 Gestor de Citas
     </footer>
+
+    <!-- Scripts propios -->
+    <script src="{% static 'js/auth.js' %}"></script>
+    <script src="{% static 'js/appointments.js' %}"></script>
+    <script src="{% static 'js/notifications.js' %}"></script>
 
 </body>
 </html>

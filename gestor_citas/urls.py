@@ -16,10 +16,18 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.shortcuts import render
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('',include('citas.urls')),
+
+    # frontend
+    path('', lambda request: render(request, 'index.html'), name='index'),
+    path('mis-citas/', lambda request: render(request, 'citas/listar_citas.html'), name='listar_citas'),
+    path('registro/', lambda request: render(request, 'usuarios/registro.html'), name='registro_frontend'),
+    path('login/', lambda request: render(request, 'usuarios/login.html'), name='login_frontend'),
+
+    # APIs
     path('api/usuarios/', include('usuarios.urls')),
     path('api/citas/', include('citas.urls')),
     path('api/notificaciones/', include('notificaciones.urls')),

@@ -1,43 +1,85 @@
-{% extends 'base.html' %}
-
+{% extends "base.html" %}
 {% block title %}Inicio{% endblock %}
 
 {% block content %}
 <div class="max-w-4xl mx-auto bg-white p-6 rounded shadow">
-    <h2 class="text-2xl font-bold mb-4">Bienvenido, {{ user.first_name }}!</h2>
+    <h2 class="text-2xl font-bold mb-4" id="bienvenida">Bienvenido!</h2>
 
     <p class="mb-4">
         Esta es tu plataforma para gestionar tus citas de manera fácil y rápida.
     </p>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <!-- Botón para ver mis citas -->
-        <a href="{% url 'listar_citas' %}" class="block bg-blue-600 text-white p-4 rounded text-center hover:bg-blue-700">
+        <a href="/mis-citas/" id="btn-mis-citas" class="block bg-blue-600 text-white p-4 rounded text-center hover:bg-blue-700">
             Ver mis citas
         </a>
 
-        <!-- Botón para ver notificaciones -->
-        <a href="{% url 'listar_notificaciones' %}" class="block bg-green-600 text-white p-4 rounded text-center hover:bg-green-700">
+        <a href="/notificaciones/" id="btn-notificaciones" class="block bg-green-600 text-white p-4 rounded text-center hover:bg-green-700">
             Ver notificaciones
         </a>
     </div>
 
-    <!-- Sección opcional de próximas citas -->
-    {% if proximas_citas %}
     <div class="mt-6">
         <h3 class="text-xl font-semibold mb-2">Próximas citas</h3>
-        <ul class="list-disc pl-5">
-            {% for cita in proximas_citas %}
-            <li>{{ cita.fecha }} a las {{ cita.hora }} con
-                {% if user.is_professional %}
-                    {{ cita.cliente.first_name }}
-                {% else %}
-                    {{ cita.profesional.first_name }}
-                {% endif %}
-            </li>
-            {% endfor %}
+        <ul id="citas-list" class="list-disc pl-5">
+            <li>Cargando próximas citas...</li>
         </ul>
     </div>
-    {% endif %}
 </div>
+
+<!-- JS específico para index -->
+<script type="module">
+import { getProfile, refreshToken } from '/static/js/auth.js';
+
+async function cargarCitas() {
+    const token = localStorage.getItem('access');
+    if (!token) return;
+
+    try {
+        const res = await fetch('/api/citas/mis-citas/', {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+
+        if (res.status === 401) {
+            const refreshed = await refreshToken();
+            if (refreshed) return cargarCitas();
+            else return;
+        }
+
+        const citas = await res.json();
+        const ul = document.getElementById('citas-list');
+        ul.innerHTML = '';
+
+        const hoy = new Date().toISOString().split('T')[0];
+        const proximas = citas.filter(c => c.fecha >= hoy).slice(0, 5);
+
+        if (proximas.length === 0) {
+            ul.innerHTML = '<li>No tienes próximas citas.</li>';
+            return;
+        }
+
+        proximas.forEach(cita => {
+            const li = document.createElement('li');
+            li.textContent = `${cita.fecha} a las ${cita.hora} con ${cita.profesional ? cita.profesional.first_name : cita.cliente.first_name}`;
+            ul.appendChild(li);
+        });
+
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+async function init() {
+    const perfil = await getProfile();
+    if (!perfil) {
+        window.location.href = '/login/';
+        return;
+    }
+
+    document.getElementById('bienvenida').textContent = `Bienvenido, ${perfil.first_name}!`;
+    cargarCitas();
+}
+
+init();
+</script>
 {% endblock %}
