@@ -71,6 +71,12 @@ class MisCitasView(generics.ListAPIView):
 
         return queryset.order_by("fecha", "hora")
 
+class CitaDetalleView(generics.RetrieveAPIView):
+    queryset = Cita.objects.all()
+    serializer_class = CitaSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    lookup_field = 'id'
+
 class CrearCitaView(generics.CreateAPIView):
     serializer_class = CrearCitaSerializer
     permission_classes = [permissions.IsAuthenticated]

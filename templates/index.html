@@ -9,17 +9,11 @@
         Esta es tu plataforma para gestionar tus citas de manera fácil y rápida.
     </p>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <a href="/mis-citas/" id="btn-mis-citas" class="block bg-blue-600 text-white p-4 rounded text-center hover:bg-blue-700">
-            Ver mis citas
-        </a>
-
-        <a href="/notificaciones/" id="btn-notificaciones" class="block bg-green-600 text-white p-4 rounded text-center hover:bg-green-700">
-            Ver notificaciones
-        </a>
+    <div id="acciones" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Botones se llenarán según usuario logueado -->
     </div>
 
-    <div class="mt-6">
+    <div id="proximas-citas-container" class="mt-6 hidden">
         <h3 class="text-xl font-semibold mb-2">Próximas citas</h3>
         <ul id="citas-list" class="list-disc pl-5">
             <li>Cargando próximas citas...</li>
@@ -27,9 +21,12 @@
     </div>
 </div>
 
-<!-- JS específico para index -->
-<script type="module">
-import { getProfile, refreshToken } from '/static/js/auth.js';
+<script>
+// ESPERA a que auth.js esté cargado
+window.addEventListener('DOMContentLoaded', function() {
+    // Espera un poco más para asegurar que auth.js está disponible
+    setTimeout(initPage, 100);
+});
 
 async function cargarCitas() {
     const token = localStorage.getItem('access');
@@ -37,11 +34,13 @@ async function cargarCitas() {
 
     try {
         const res = await fetch('/api/citas/mis-citas/', {
-            headers: { 'Authorization': 'Bearer ' + token }
+            headers: { 'Authorization': 'Bearer ' + token,
+                        'Content-Type': 'application/json'
+            }
         });
 
         if (res.status === 401) {
-            const refreshed = await refreshToken();
+            const refreshed = await window.refreshToken();
             if (refreshed) return cargarCitas();
             else return;
         }
@@ -55,31 +54,59 @@ async function cargarCitas() {
 
         if (proximas.length === 0) {
             ul.innerHTML = '<li>No tienes próximas citas.</li>';
-            return;
+        } else {
+            proximas.forEach(cita => {
+                const li = document.createElement('li');
+                li.textContent = `${cita.fecha} a las ${cita.hora} con ${cita.profesional ? cita.profesional.first_name : cita.cliente.first_name}`;
+                ul.appendChild(li);
+            });
         }
 
-        proximas.forEach(cita => {
-            const li = document.createElement('li');
-            li.textContent = `${cita.fecha} a las ${cita.hora} con ${cita.profesional ? cita.profesional.first_name : cita.cliente.first_name}`;
-            ul.appendChild(li);
-        });
+        document.getElementById('proximas-citas-container').classList.remove('hidden');
 
     } catch (err) {
         console.error(err);
     }
 }
 
-async function init() {
-    const perfil = await getProfile();
-    if (!perfil) {
-        window.location.href = '/login/';
+async function initPage() {
+    // Verificar que window.getProfile existe
+    if (typeof window.getProfile !== 'function') {
+        console.error('auth.js no está cargado todavía');
+        setTimeout(initPage, 100);
         return;
     }
 
-    document.getElementById('bienvenida').textContent = `Bienvenido, ${perfil.first_name}!`;
-    cargarCitas();
-}
+    const perfil = await window.getProfile();
 
-init();
+    const accionesDiv = document.getElementById('acciones');
+
+    if (perfil) {
+        // Usuario logueado
+        document.getElementById('bienvenida').textContent = `Bienvenido, ${perfil.first_name}!`;
+
+        accionesDiv.innerHTML = `
+            <a href="/mis-citas/" class="block bg-blue-600 text-white p-4 rounded text-center hover:bg-blue-700">
+                Ver mis citas
+            </a>
+            <a href="/notificaciones/" class="block bg-green-600 text-white p-4 rounded text-center hover:bg-green-700">
+                Ver notificaciones
+            </a>
+        `;
+
+        cargarCitas();
+    } else {
+        // Usuario no logueado
+        document.getElementById('bienvenida').textContent = 'Bienvenido a Gestor de Citas!';
+        accionesDiv.innerHTML = `
+            <a href="/login/" class="block bg-blue-600 text-white p-4 rounded text-center hover:bg-blue-700">
+                Login
+            </a>
+            <a href="/registro/" class="block bg-green-600 text-white p-4 rounded text-center hover:bg-green-700">
+                Registro
+            </a>
+        `;
+    }
+}
 </script>
 {% endblock %}

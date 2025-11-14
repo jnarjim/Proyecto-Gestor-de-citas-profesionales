@@ -5,39 +5,68 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Gestor de Citas{% endblock %}</title>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- HTMX -->
     <script src="https://unpkg.com/htmx.org@1.9.3"></script>
-    <!-- Alpine.js -->
-    <script src="https://unpkg.com/alpinejs@3.12.0/dist/cdn.min.js" defer></script>
+    <script src="{% static 'js/auth.js' %}" ></script>
+    <script src="{% static 'js/appointments.js' %}"></script>
+    <script src="{% static 'js/notifications.js' %}"></script>
 </head>
+
 <body class="bg-gray-100 font-sans">
 
     <!-- Header -->
     <header class="bg-blue-600 text-white p-4 flex justify-between items-center">
         <h1 class="text-xl font-bold">Gestor de Citas</h1>
 
-        <!-- Menú dinámico según login -->
-        <nav x-data="{ loggedIn: localStorage.getItem('access') ? true : false }" class="space-x-4">
-            <a href="index.html" class="hover:underline">Inicio</a>
+        <!-- Menú dinámico -->
+        <nav x-data="{
+                loggedIn: false,
+                userFirstName: '',
+                isProfessional: false,
+                async init() {
+                    const perfil = await getProfile();
+                    if (perfil) {
+                        this.loggedIn = true;
+                        this.userFirstName = perfil.first_name;
+                        this.isProfessional = perfil.is_professional;
+                        localStorage.setItem('user_first_name', perfil.first_name);
+                        localStorage.setItem('is_professional', perfil.is_professional);
+                    }
+                },
+                logout() {
+                    localStorage.removeItem('access');
+                    localStorage.removeItem('refresh');
+                    localStorage.removeItem('user_first_name');
+                    localStorage.removeItem('is_professional');
+                    this.loggedIn = false;
+                    window.location.href = '/';
+                }
+            }" x-init="init()" class="space-x-4">
 
-            <!-- Solo para usuarios logueados -->
+            <a href="/" class="hover:underline">Inicio</a>
+
+            <!-- Links visibles solo si está logueado -->
             <template x-if="loggedIn">
-                <a href="mis_citas.html" class="hover:underline">Mis Citas</a>
+                <a href="/mis-citas/" class="hover:underline">Mis Citas</a>
             </template>
             <template x-if="loggedIn">
-                <a href="notificaciones.html" class="hover:underline">Notificaciones</a>
+                <a href="/notificaciones/" class="hover:underline">Notificaciones</a>
             </template>
 
-            <!-- Solo para usuarios no logueados -->
+            <!-- Links visibles solo si NO está logueado -->
             <template x-if="!loggedIn">
-                <a href="usuarios/login.html" class="hover:underline">Login</a>
+                <a href="/login/" class="hover:underline">Login</a>
+                <a href="/registro/" class="hover:underline">Registro</a>
+            </template>
+
+            <!-- Saludo -->
+            <template x-if="loggedIn">
+                <span class="ml-2">Bienvenido, <strong x-text="userFirstName"></strong>!</span>
             </template>
 
             <!-- Botón de logout -->
             <template x-if="loggedIn">
-                <button @click="localStorage.removeItem('access'); localStorage.removeItem('refresh'); loggedIn=false; window.location='index.html';"
+                <button @click="logout()"
                         class="bg-red-500 px-2 py-1 rounded hover:bg-red-600">
                     Logout
                 </button>
@@ -45,28 +74,15 @@
         </nav>
     </header>
 
-    <!-- Contenedor principal -->
     <main class="p-6">
         {% block content %}{% endblock %}
     </main>
 
-    <!-- Notificaciones dinámicas -->
-    <div x-data="{ message: '', show: false }"
-         x-show="show"
-         x-text="message"
-         class="fixed top-4 right-4 bg-green-500 text-white p-2 rounded shadow"
-         x-transition>
-    </div>
-
-    <!-- Footer -->
     <footer class="bg-gray-200 text-center p-4 mt-6">
         &copy; 2025 Gestor de Citas
     </footer>
 
-    <!-- Scripts propios -->
-    <script src="{% static 'js/auth.js' %}"></script>
-    <script src="{% static 'js/appointments.js' %}"></script>
-    <script src="{% static 'js/notifications.js' %}"></script>
+<script src="https://unpkg.com/alpinejs@3.12.0/dist/cdn.min.js" defer></script>
 
 </body>
 </html>

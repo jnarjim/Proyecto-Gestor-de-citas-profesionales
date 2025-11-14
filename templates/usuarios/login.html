@@ -37,6 +37,18 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
             // Guardar tokens JWT
             localStorage.setItem('access', result.access);
             localStorage.setItem('refresh', result.refresh);
+
+            // Obtener información del usuario
+            const perfilRes = await fetch('/api/usuarios/me/', {
+                headers: { 'Authorization': 'Bearer ' + result.access }
+            });
+            const perfil = await perfilRes.json();
+
+            if (perfilRes.ok) {
+                localStorage.setItem('user_first_name', perfil.first_name);
+                localStorage.setItem('is_professional', perfil.is_professional);
+            }
+
             // Redirigir al index
             window.location.href = '/';
         } else {

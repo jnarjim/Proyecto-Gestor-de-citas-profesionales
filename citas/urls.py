@@ -7,6 +7,7 @@ from .views import (
     CancelarCitaView,
     CompletarCitaView,
     CitasDisponiblesGlobalView,
+    CitaDetalleView,
 )
 
 urlpatterns = [
@@ -17,4 +18,6 @@ urlpatterns = [
     path('<int:cita_id>/cancelar/', CancelarCitaView.as_view(), name='cancelar_cita'),
     path('<int:cita_id>/completar/', CompletarCitaView.as_view(), name='completar_cita'),
     path('disponibles/', CitasDisponiblesGlobalView.as_view(), name='citas_disponibles_global'),
+    path('<int:id>/', CitaDetalleView.as_view(), name='detalle_cita_api'),
+
 ]
