@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 {% block title %}Detalle de Cita{% endblock %}
 
 {% block content %}
@@ -7,16 +8,29 @@
 
     <div id="cita-mensaje" class="mb-4 text-center text-red-500"></div>
 
-    <div id="detalle-cita">
-        <p class="text-center">Cargando...</p>
+    <!-- Aquí se cargarán los detalles de la cita -->
+    <div id="detalle-cita" class="text-center">
+        Cargando...
     </div>
 
+    <!-- Botones de acción -->
     <div class="mt-4 flex justify-center gap-2">
-        <button id="btn-reservar" class="hidden bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Reservar</button>
-        <button id="btn-cancelar" class="hidden bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">Cancelar</button>
-        <button id="btn-completar" class="hidden bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Completar</button>
+        <button id="btn-reservar" class="hidden bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+            Reservar
+        </button>
+        <button id="btn-cancelar" class="hidden bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
+            Cancelar
+        </button>
+        <button id="btn-completar" class="hidden bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+            Completar
+        </button>
     </div>
+
+    <a href="/mis-citas/" class="mt-4 block text-center text-blue-600 hover:underline">
+        ← Volver a mis citas
+    </a>
 </div>
 
+<!-- Cargar tu JS -->
 <script src="{% static 'js/detalle_cita.js' %}"></script>
 {% endblock %}

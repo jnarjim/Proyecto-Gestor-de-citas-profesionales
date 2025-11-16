@@ -43,7 +43,7 @@ async function cargarMisCitas() {
         citas.forEach(cita => {
             const li = document.createElement('li');
             li.innerHTML = `
-                <a href="/detalle-cita/${cita.id}/" class="text-blue-600 hover:underline">
+                <a href="/cita/${cita.id}/" class="text-blue-600 hover:underline">
                     ${cita.fecha} a las ${cita.hora}
                     con ${cita.profesional ? cita.profesional.first_name : cita.cliente.first_name}
                     – Estado: ${cita.estado}

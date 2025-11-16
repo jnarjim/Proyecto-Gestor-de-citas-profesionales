@@ -17,6 +17,9 @@ def index(request):
 def listar_citas(request):
     return render(request, 'citas/listar_citas.html')
 
+def detalle_cita(request, id):
+    return render(request, "citas/detalle_cita.html", {"id": id})
+
 class CitasDisponiblesProfesionalView(generics.ListAPIView):
     serializer_class = CitaSerializer
 
@@ -75,7 +78,7 @@ class CitaDetalleView(generics.RetrieveAPIView):
     queryset = Cita.objects.all()
     serializer_class = CitaSerializer
     permission_classes = [permissions.IsAuthenticated]
-    lookup_field = 'id'
+    lookup_field = 'pk'
 
 class CrearCitaView(generics.CreateAPIView):
     serializer_class = CrearCitaSerializer
@@ -118,7 +121,7 @@ class CrearCitaView(generics.CreateAPIView):
 class ReservarCitaView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
-    def post(self, request, cita_id):
+    def post(self, request, pk):
         user = request.user
 
         # Solo clientes pueden reservar
@@ -127,7 +130,7 @@ class ReservarCitaView(APIView):
                             status=status.HTTP_403_FORBIDDEN)
 
         # Obtener la cita
-        cita = get_object_or_404(Cita, id=cita_id)
+        cita = get_object_or_404(Cita, pk=pk)
 
         # Validar que la cita no sea de una fecha pasada
         if cita.fecha < date.today():
@@ -165,9 +168,9 @@ class ReservarCitaView(APIView):
 class CancelarCitaView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
-    def post(self, request, cita_id):
+    def post(self, request, pk):
         user = request.user
-        cita = get_object_or_404(Cita, id=cita_id)
+        cita = get_object_or_404(Cita, pk=pk)
 
         #  No permitir cancelar citas pasadas
         if cita.fecha < date.today():
@@ -240,7 +243,7 @@ class CancelarCitaView(APIView):
 class CompletarCitaView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
-    def post(self, request, cita_id):
+    def post(self, request, pk):
         user = request.user
 
         # Solo profesionales pueden completar citas
@@ -251,7 +254,7 @@ class CompletarCitaView(APIView):
             )
 
         # Obtener la cita
-        cita = get_object_or_404(Cita, id=cita_id)
+        cita = get_object_or_404(Cita, pk=pk)
 
         # No permitir completar citas pasadas que no estén confirmadas
         if cita.fecha < date.today() and cita.estado != "confirmada":
