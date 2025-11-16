@@ -4,27 +4,31 @@
 {% block content %}
 <div class="max-w-4xl mx-auto bg-white p-6 rounded shadow">
     <h2 class="text-2xl font-bold mb-4">Mis citas</h2>
+
     <ul id="mis-citas-list" class="list-disc pl-5">
         <li>Cargando citas...</li>
     </ul>
 </div>
 
-<script type="module">
-import { getProfile, refreshToken } from '/static/js/auth.js';
+<script>
+document.addEventListener("DOMContentLoaded", init);
 
 async function cargarMisCitas() {
     const token = localStorage.getItem('access');
     if (!token) return;
 
     try {
-        const res = await fetch('/api/citas/mis-citas/', {
-            headers: { 'Authorization': 'Bearer ' + token }
+        let res = await fetch('/api/citas/mis-citas/', {
+            headers: {
+                'Authorization': 'Bearer ' + token
+            }
         });
 
+        // Intentar refrescar token si expira
         if (res.status === 401) {
-            const refreshed = await refreshToken();
+            const refreshed = await window.refreshToken();
             if (refreshed) return cargarMisCitas();
-            else return;
+            return;
         }
 
         const citas = await res.json();
@@ -38,19 +42,30 @@ async function cargarMisCitas() {
 
         citas.forEach(cita => {
             const li = document.createElement('li');
-            li.innerHTML = `<a href="/detalle-cita/${cita.id}/" class="text-blue-600 hover:underline">
-                               ${cita.fecha} a las ${cita.hora} con ${cita.profesional ? cita.profesional.first_name : cita.cliente.first_name} - Estado: ${cita.estado}
-                            </a>`;
+            li.innerHTML = `
+                <a href="/detalle-cita/${cita.id}/" class="text-blue-600 hover:underline">
+                    ${cita.fecha} a las ${cita.hora}
+                    con ${cita.profesional ? cita.profesional.first_name : cita.cliente.first_name}
+                    – Estado: ${cita.estado}
+                </a>
+            `;
             ul.appendChild(li);
         });
 
     } catch (err) {
-        console.error(err);
+        console.error("Error cargando citas:", err);
     }
 }
 
 async function init() {
-    const perfil = await getProfile();
+    // Esperar a que auth.js esté cargado
+    if (typeof window.getProfile !== 'function') {
+        console.warn("auth.js no está listo aún");
+        setTimeout(init, 100);
+        return;
+    }
+
+    const perfil = await window.getProfile();
     if (!perfil) {
         window.location.href = '/login/';
         return;
@@ -58,7 +73,5 @@ async function init() {
 
     cargarMisCitas();
 }
-
-init();
 </script>
 {% endblock %}
