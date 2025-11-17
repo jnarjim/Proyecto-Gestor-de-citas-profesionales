@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 {% block title %}Inicio{% endblock %}
 
 {% block content %}
@@ -9,9 +10,7 @@
         Esta es tu plataforma para gestionar tus citas de manera fácil y rápida.
     </p>
 
-    <div id="acciones" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <!-- Botones se llenarán según usuario logueado -->
-    </div>
+    <div id="acciones" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
 
     <div id="proximas-citas-container" class="mt-6 hidden">
         <h3 class="text-xl font-semibold mb-2">Próximas citas</h3>
@@ -21,92 +20,5 @@
     </div>
 </div>
 
-<script>
-// ESPERA a que auth.js esté cargado
-window.addEventListener('DOMContentLoaded', function() {
-    // Espera un poco más para asegurar que auth.js está disponible
-    setTimeout(initPage, 100);
-});
-
-async function cargarCitas() {
-    const token = localStorage.getItem('access');
-    if (!token) return;
-
-    try {
-        const res = await fetch('/api/citas/mis-citas/', {
-            headers: { 'Authorization': 'Bearer ' + token,
-                        'Content-Type': 'application/json'
-            }
-        });
-
-        if (res.status === 401) {
-            const refreshed = await window.refreshToken();
-            if (refreshed) return cargarCitas();
-            else return;
-        }
-
-        const citas = await res.json();
-        const ul = document.getElementById('citas-list');
-        ul.innerHTML = '';
-
-        const hoy = new Date().toISOString().split('T')[0];
-        const proximas = citas.filter(c => c.fecha >= hoy).slice(0, 5);
-
-        if (proximas.length === 0) {
-            ul.innerHTML = '<li>No tienes próximas citas.</li>';
-        } else {
-            proximas.forEach(cita => {
-                const li = document.createElement('li');
-                li.textContent = `${cita.fecha} a las ${cita.hora} con ${cita.profesional ? cita.profesional.first_name : cita.cliente.first_name}`;
-                ul.appendChild(li);
-            });
-        }
-
-        document.getElementById('proximas-citas-container').classList.remove('hidden');
-
-    } catch (err) {
-        console.error(err);
-    }
-}
-
-async function initPage() {
-    // Verificar que window.getProfile existe
-    if (typeof window.getProfile !== 'function') {
-        console.error('auth.js no está cargado todavía');
-        setTimeout(initPage, 100);
-        return;
-    }
-
-    const perfil = await window.getProfile();
-
-    const accionesDiv = document.getElementById('acciones');
-
-    if (perfil) {
-        // Usuario logueado
-        document.getElementById('bienvenida').textContent = `Bienvenido, ${perfil.first_name}!`;
-
-        accionesDiv.innerHTML = `
-            <a href="/mis-citas/" class="block bg-blue-600 text-white p-4 rounded text-center hover:bg-blue-700">
-                Ver mis citas
-            </a>
-            <a href="/notificaciones/" class="block bg-green-600 text-white p-4 rounded text-center hover:bg-green-700">
-                Ver notificaciones
-            </a>
-        `;
-
-        cargarCitas();
-    } else {
-        // Usuario no logueado
-        document.getElementById('bienvenida').textContent = 'Bienvenido a Gestor de Citas!';
-        accionesDiv.innerHTML = `
-            <a href="/login/" class="block bg-blue-600 text-white p-4 rounded text-center hover:bg-blue-700">
-                Login
-            </a>
-            <a href="/registro/" class="block bg-green-600 text-white p-4 rounded text-center hover:bg-green-700">
-                Registro
-            </a>
-        `;
-    }
-}
-</script>
+<script type="module" src="{% static 'js/index.js' %}"></script>
 {% endblock %}
