@@ -71,6 +71,11 @@ async function initPage() {
             <a href="/notificaciones/" class="block bg-green-600 text-white p-4 rounded text-center hover:bg-green-700">
                 Ver notificaciones
             </a>
+            ${!perfil.is_professional ? `
+            <a href="/citas-disponibles/" class="block bg-purple-600 text-white p-4 rounded text-center hover:bg-purple-700">
+                Ver citas disponibles
+            </a>
+            ` : ''}
         `;
 
         cargarCitas();

@@ -92,7 +92,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         const hora = horaSelect.value;
         const token = localStorage.getItem("access");
 
-        const res = await fetch("/api/citas/", {
+        const res = await fetch("/api/citas/crear/", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

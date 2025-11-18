@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Citas Disponibles{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto p-6">
+    <h2 class="text-2xl font-bold mb-6 text-center">Citas Disponibles</h2>
+
+    <!-- Contenedor de cards -->
+    <div id="citas-disponibles" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Aquí se cargarán las citas con JS -->
+        <p id="loading-citas" class="col-span-full text-center text-gray-500">Cargando citas...</p>
+    </div>
+</div>
+
+<a href="/mis-citas/" class="mt-6 block text-center text-blue-600 hover:underline">
+    ← Volver a mis citas
+</a>
+
+<script src="{% static 'js/citas_disponibles.js' %}"></script>
+{% endblock %}

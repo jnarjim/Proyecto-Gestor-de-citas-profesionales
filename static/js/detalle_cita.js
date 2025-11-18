@@ -278,5 +278,14 @@ async function init() {
     }
 }
 
-console.log('Script loaded, calling init...');
-init();
+// Esperar a que DOM esté listo
+document.addEventListener("DOMContentLoaded", async () => {
+    // Esperar hasta que getProfile esté definido
+    while (typeof window.getProfile !== "function") {
+        console.log("Esperando a que auth.js cargue...");
+        await new Promise(r => setTimeout(r, 50));
+    }
+
+    console.log("auth.js cargado, inicializando detalle de cita...");
+    init();
+});

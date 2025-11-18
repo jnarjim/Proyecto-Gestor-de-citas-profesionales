@@ -28,6 +28,7 @@ urlpatterns = [
     path('login/', lambda request: render(request, 'usuarios/login.html'), name='login_frontend'),
     path('cita/<int:cita_id>/', lambda r, cita_id: render(r, 'citas/detalle_cita.html'), name='detalle_cita'),
     path('crear-cita/', lambda  request: render(request, 'citas/crear_cita.html'), name='crear_cita'),
+    path('citas-disponibles/', lambda request: render(request, 'citas/citas_disponibles.html'), name='citas_disponibles'),
 
 
     # APIs
