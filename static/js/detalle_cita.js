@@ -78,6 +78,38 @@ function mostrarDetalles(cita, perfil) {
         <p><strong>Estado:</strong> ${estado}</p>
     `;
 
+    const btnEliminar = document.getElementById('btn-eliminar');
+    btnEliminar.classList.add('hidden');
+
+    if (perfil.is_professional) {
+        if (cita.profesional && cita.profesional.id === perfil.id) {
+            btnEliminar.classList.remove('hidden');
+        }
+    } else {
+        if (cita.cliente && cita.cliente.id === perfil.id) {
+            btnEliminar.classList.remove('hidden');
+        }
+    }
+
+    // Evento
+    btnEliminar.onclick = async () => {
+        const token = localStorage.getItem('access');
+        try {
+            const res = await fetch(`/api/citas/${cita.id}/eliminar/`, {
+                method: 'POST',
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            const data = await res.json();
+            alert(data.detail || 'Acción completada');
+
+            if (res.ok) {
+                window.location.href = perfil.is_professional ? '/mis-citas/' : '/citas-disponibles/';
+            }
+        } catch (err) {
+            console.error('Error al eliminar cita:', err);
+        }
+    };
+
     // Mostrar botones según rol y estado
     const btnReservar = document.getElementById('btn-reservar');
     const btnCancelar = document.getElementById('btn-cancelar');

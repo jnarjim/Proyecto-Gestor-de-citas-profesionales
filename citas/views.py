@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.exceptions import ValidationError
 
+from django.utils.dateparse import parse_date
 from notificaciones.models import Notificacion
 from .models import Cita
 from .serializers import CitaSerializer, CrearCitaSerializer
@@ -300,7 +301,44 @@ class CompletarCitaView(APIView):
             status=status.HTTP_200_OK
         )
 
-from django.utils.dateparse import parse_date
+class EliminarCitaView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, pk):
+        user = request.user
+        cita = get_object_or_404(Cita, pk=pk)
+
+        # Profesional elimina cualquier cita suya
+        if user.is_professional:
+            if cita.profesional != user:
+                return Response({"detail": "No puedes eliminar citas de otro profesional."},
+                                status=status.HTTP_403_FORBIDDEN)
+
+            cita.delete()
+            return Response({"detail": "Cita eliminada del sistema."}, status=status.HTTP_200_OK)
+
+        # Cliente elimina su propia cita
+        else:
+            if cita.cliente != user:
+                return Response({"detail": "No puedes eliminar una cita que no es tuya."},
+                                status=status.HTTP_403_FORBIDDEN)
+
+            if cita.profesional.permite_reabrir_citas:
+                cita.cliente = None
+                cita.estado = "pendiente"
+                cita.save()
+            else:
+                cita.estado = "cancelada"
+                cita.save()
+
+            Notificacion.objects.create(
+                receptor=cita.profesional,
+                emisor=user,
+                tipo="cancelada",
+                mensaje=f"{user.first_name} ha eliminado su cita del {cita.fecha} a las {cita.hora}."
+            )
+
+            return Response({"detail": "Cita eliminada/cancelada correctamente."}, status=status.HTTP_200_OK)
 
 class CitasDisponiblesGlobalView(generics.ListAPIView):
     serializer_class = CitaSerializer
