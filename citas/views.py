@@ -20,6 +20,9 @@ def listar_citas(request):
 def detalle_cita(request, id):
     return render(request, "citas/detalle_cita.html", {"id": id})
 
+def crear_cita(request):
+    return render(request, "citas/crear_cita.html")
+
 class CitasDisponiblesProfesionalView(generics.ListAPIView):
     serializer_class = CitaSerializer
 

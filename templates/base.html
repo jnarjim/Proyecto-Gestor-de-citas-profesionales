@@ -6,10 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Gestor de Citas{% endblock %}</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/htmx.org@1.9.3"></script>
-    <script src="{% static 'js/auth.js' %}"></script>
-    <script src="{% static 'js/appointments.js' %}"></script>
-    <script src="{% static 'js/notifications.js' %}"></script>
+    <script src="https://unpkg.com/alpinejs@3.12.0/dist/cdn.min.js" defer></script>
+    <script src="{% static 'js/auth.js' %}" defer></script>
+    <script src="{% static 'js/notifications.js' %}" defer></script>
 </head>
 
 <body class="bg-gray-100 font-sans">
@@ -81,8 +80,6 @@
     <footer class="bg-gray-200 text-center p-4 mt-6">
         &copy; 2025 Gestor de Citas
     </footer>
-
-<script src="https://unpkg.com/alpinejs@3.12.0/dist/cdn.min.js" defer></script>
 
 </body>
 </html>

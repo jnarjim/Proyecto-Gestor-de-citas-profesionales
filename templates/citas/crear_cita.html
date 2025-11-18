@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Crear Cita{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto bg-white p-6 rounded shadow mt-6">
+    <h2 class="text-2xl font-bold mb-4 text-center">Crear Nueva Cita</h2>
+
+    <form id="crear-cita-form">
+        <label class="block mb-2">Fecha</label>
+        <input type="date" id="fecha" name="fecha" class="w-full p-2 mb-4 border rounded" required>
+
+        <label class="block mb-2">Hora disponible</label>
+        <select id="hora" name="hora" class="w-full p-2 mb-4 border rounded" required>
+            <option value="">Selecciona una fecha...</option>
+        </select>
+
+        <button id="crear-btn" type="submit" class="w-full bg-green-600 text-white p-2 rounded hover:bg-green-700">
+            Crear Cita
+        </button>
+    </form>
+
+    <div id="mensaje-cita" class="mt-2 text-center text-red-500"></div>
+</div>
+
+<script src="{% static 'js/crear_cita.js' %}"></script>
+{% endblock %}

@@ -47,6 +47,7 @@ async function cargarMisCitas() {
 }
 
 async function init() {
+    // Esperar a que auth.js esté cargado
     if (typeof window.getProfile !== 'function') {
         console.warn("auth.js no está listo aún");
         setTimeout(init, 100);
@@ -57,6 +58,16 @@ async function init() {
     if (!perfil) {
         window.location.href = '/login/';
         return;
+    }
+
+    // MOSTRAR BOTÓN SOLO SI ES PROFESIONAL
+    if (perfil.is_professional) {
+        document.getElementById("btn-crear-cita").innerHTML = `
+            <a href="/crear-cita/"
+                class="block bg-green-600 text-white p-2 rounded mb-4 text-center hover:bg-green-700">
+                ➕ Crear nueva cita
+            </a>
+        `;
     }
 
     cargarMisCitas();
