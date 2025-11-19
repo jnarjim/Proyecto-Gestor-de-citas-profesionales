@@ -1,62 +1,52 @@
-// detalle_cita.js
+// detalle_cita.js - Gestión de detalle de cita
 
+/**
+ * Obtener datos de una cita específica
+ */
 async function getCita(citaId, token) {
-    console.log('=== getCita called ===');
-    console.log('citaId:', citaId);
-    console.log('token:', token ? 'exists' : 'missing');
-
     const url = `/api/citas/${citaId}/`;
-    console.log('Fetching URL:', url);
 
     try {
         const res = await fetch(url, {
-            headers: { 'Authorization': 'Bearer ' + token }
+            headers: { 'Authorization': `Bearer ${token}` }
         });
 
-        console.log('Response status:', res.status);
-        console.log('Response ok:', res.ok);
-
         if (res.status === 401) {
-            console.log('Token expired, attempting refresh...');
             const refreshed = await window.refreshToken();
             if (refreshed) {
-                console.log('Token refreshed successfully, retrying...');
                 return getCita(citaId, localStorage.getItem('access'));
             } else {
-                console.error('Failed to refresh token');
+                toast.error('Sesión expirada. Por favor, inicia sesión nuevamente');
+                setTimeout(() => window.location.href = '/login/', 2000);
                 return null;
             }
         }
 
         if (!res.ok) {
-            const errorText = await res.text();
-            console.error('Error response:', errorText);
-            throw new Error(`No se pudo obtener la cita: ${res.status} - ${errorText}`);
+            throw new Error(`Error ${res.status}: No se pudo obtener la cita`);
         }
 
-        const data = await res.json();
-        console.log('Cita data received:', data);
-        return data;
+        return await res.json();
 
     } catch (error) {
-        console.error('Error in getCita:', error);
+        console.error('Error al obtener cita:', error);
+        toast.error('Error al cargar los detalles de la cita');
         throw error;
     }
 }
 
+/**
+ * Mostrar detalles de la cita en el DOM
+ */
 function mostrarDetalles(cita, perfil) {
-    console.log('=== mostrarDetalles called ===');
-    console.log('cita:', cita);
-    console.log('perfil:', perfil);
-
     const detalleDiv = document.getElementById('detalle-cita');
 
     if (!detalleDiv) {
-        console.error('Element detalle-cita not found!');
+        console.error('Elemento detalle-cita no encontrado');
         return;
     }
 
-    // Formatear fecha y hora si es necesario
+    // Formatear datos
     const fecha = cita.fecha || 'No disponible';
     const hora = cita.hora || 'No disponible';
     const estado = cita.estado || 'No disponible';
@@ -69,255 +59,411 @@ function mostrarDetalles(cita, perfil) {
         ? `${cita.cliente.first_name || ''} ${cita.cliente.last_name || ''}`.trim()
         : 'Libre';
 
-    console.log('Rendering details...');
-    detalleDiv.innerHTML = `
-        <p><strong>Profesional:</strong> ${profesionalNombre}</p>
-        <p><strong>Cliente:</strong> ${clienteNombre}</p>
-        <p><strong>Fecha:</strong> ${fecha}</p>
-        <p><strong>Hora:</strong> ${hora}</p>
-        <p><strong>Estado:</strong> ${estado}</p>
-    `;
-
-    const btnEliminar = document.getElementById('btn-eliminar');
-    btnEliminar.classList.add('hidden');
-
-    if (perfil.is_professional) {
-        if (cita.profesional && cita.profesional.id === perfil.id) {
-            btnEliminar.classList.remove('hidden');
-        }
-    } else {
-        if (cita.cliente && cita.cliente.id === perfil.id) {
-            btnEliminar.classList.remove('hidden');
-        }
-    }
-
-    // Evento
-    btnEliminar.onclick = async () => {
-        const token = localStorage.getItem('access');
-        try {
-            const res = await fetch(`/api/citas/${cita.id}/eliminar/`, {
-                method: 'POST',
-                headers: { 'Authorization': 'Bearer ' + token }
-            });
-            const data = await res.json();
-            alert(data.detail || 'Acción completada');
-
-            if (res.ok) {
-                window.location.href = perfil.is_professional ? '/mis-citas/' : '/citas-disponibles/';
-            }
-        } catch (err) {
-            console.error('Error al eliminar cita:', err);
-        }
+    // Mapeo de estados con colores
+    const estadoClasses = {
+        'pendiente': 'text-yellow-600',
+        'confirmada': 'text-blue-600',
+        'completada': 'text-green-600',
+        'cancelada': 'text-red-600'
     };
 
-    // Mostrar botones según rol y estado
+    const estadoClass = estadoClasses[cita.estado] || 'text-gray-600';
+
+    // Renderizar HTML
+    detalleDiv.innerHTML = `
+        <div class="space-y-3">
+            <div class="grid grid-cols-2 gap-4">
+                <div class="text-left">
+                    <p class="text-gray-600 text-sm">Profesional</p>
+                    <p class="font-semibold">${profesionalNombre}</p>
+                </div>
+                <div class="text-left">
+                    <p class="text-gray-600 text-sm">Cliente</p>
+                    <p class="font-semibold">${clienteNombre}</p>
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div class="text-left">
+                    <p class="text-gray-600 text-sm">Fecha</p>
+                    <p class="font-semibold">${fecha}</p>
+                </div>
+                <div class="text-left">
+                    <p class="text-gray-600 text-sm">Hora</p>
+                    <p class="font-semibold">${hora}</p>
+                </div>
+            </div>
+            <div class="text-left">
+                <p class="text-gray-600 text-sm">Estado</p>
+                <p class="font-semibold ${estadoClass} uppercase">${estado}</p>
+            </div>
+        </div>
+    `;
+
+    // Configurar visibilidad de botones
+    configurarBotones(cita, perfil);
+}
+
+/**
+ * Configurar visibilidad y eventos de botones según rol y estado
+ */
+function configurarBotones(cita, perfil) {
     const btnReservar = document.getElementById('btn-reservar');
     const btnCancelar = document.getElementById('btn-cancelar');
     const btnCompletar = document.getElementById('btn-completar');
+    const btnEliminar = document.getElementById('btn-eliminar');
 
-    if (!btnReservar || !btnCancelar || !btnCompletar) {
-        console.error('Some buttons not found!');
+    // Verificar que todos los botones existen
+    if (!btnReservar || !btnCancelar || !btnCompletar || !btnEliminar) {
+        console.error('Algunos botones no se encontraron en el DOM');
         return;
     }
 
+    // Ocultar todos por defecto
     btnReservar.classList.add('hidden');
     btnCancelar.classList.add('hidden');
     btnCompletar.classList.add('hidden');
-
-    console.log('Checking permissions...');
-    console.log('User is professional:', perfil.is_professional);
-    console.log('Cita estado:', cita.estado);
+    btnEliminar.classList.add('hidden');
 
     if (perfil.is_professional) {
-        console.log('User is professional');
-        console.log('Cita profesional id:', cita.profesional?.id);
-        console.log('User id:', perfil.id);
-
-        // Profesional
+        // ===== PROFESIONAL =====
         if (cita.profesional && cita.profesional.id === perfil.id) {
-            console.log('Is own appointment');
+            // Botón CANCELAR - para citas pendientes o confirmadas
             if (cita.estado === 'pendiente' || cita.estado === 'confirmada') {
-                console.log('Showing cancel button');
                 btnCancelar.classList.remove('hidden');
+                btnCancelar.onclick = () => showConfirmation(
+                    '¿Estás seguro de que deseas cancelar esta cita?',
+                    'Esta acción notificará al cliente.',
+                    () => cancelarCita(cita.id)
+                );
             }
+
+            // Botón COMPLETAR - solo para citas confirmadas
             if (cita.estado === 'confirmada') {
-                console.log('Showing complete button');
                 btnCompletar.classList.remove('hidden');
+                btnCompletar.onclick = () => showConfirmation(
+                    '¿Marcar esta cita como completada?',
+                    'Esta acción es permanente.',
+                    () => completarCita(cita.id)
+                );
             }
+
+            // Botón ELIMINAR - profesional puede eliminar sus propias citas
+            btnEliminar.classList.remove('hidden');
+            btnEliminar.onclick = () => showConfirmation(
+                '¿Estás seguro de que deseas eliminar esta cita?',
+                'Esta acción no se puede deshacer.',
+                () => eliminarCita(cita.id, perfil),
+                true // Marcar como peligrosa
+            );
         }
     } else {
-        console.log('User is client');
-        // Cliente
+        // ===== CLIENTE =====
+
+        // Botón RESERVAR - solo si la cita está libre y pendiente
         if (!cita.cliente && cita.estado === 'pendiente') {
-            console.log('Showing reserve button');
             btnReservar.classList.remove('hidden');
+            btnReservar.onclick = () => showConfirmation(
+                '¿Deseas reservar esta cita?',
+                `Fecha: ${cita.fecha} - Hora: ${cita.hora}`,
+                () => reservarCita(cita.id)
+            );
+        }
+
+        // Botón CANCELAR - si el cliente tiene la cita reservada
+        if (cita.cliente && cita.cliente.id === perfil.id) {
+            if (cita.estado === 'pendiente' || cita.estado === 'confirmada') {
+                btnCancelar.classList.remove('hidden');
+                btnCancelar.onclick = () => showConfirmation(
+                    '¿Estás seguro de que deseas cancelar tu reserva?',
+                    'Podrás reservar otra cita más tarde.',
+                    () => cancelarCita(cita.id)
+                );
+            }
+
+            // Cliente puede eliminar su propia reserva
+            btnEliminar.classList.remove('hidden');
+            btnEliminar.onclick = () => showConfirmation(
+                '¿Estás seguro de que deseas eliminar esta cita?',
+                'Esta acción no se puede deshacer.',
+                () => eliminarCita(cita.id, perfil),
+                true
+            );
         }
     }
 }
 
+/**
+ * Reservar una cita
+ */
 async function reservarCita(citaId) {
-    console.log('=== reservarCita called ===');
     const token = localStorage.getItem('access');
 
     try {
         const res = await fetch(`/api/citas/${citaId}/reservar/`, {
             method: 'POST',
-            headers: { 'Authorization': 'Bearer ' + token }
+            headers: { 'Authorization': `Bearer ${token}` }
         });
 
         const data = await res.json();
-        console.log('Reserve response:', data);
 
         if (res.status === 401) {
-            window.location.href = '/login/';
+            toast.error('Sesión expirada. Por favor, inicia sesión');
+            setTimeout(() => window.location.href = '/login/', 2000);
             return;
         }
 
-        document.getElementById('cita-mensaje').innerText = data.detail || 'Acción completada';
         if (res.ok) {
-            setTimeout(() => location.reload(), 1000);
+            toast.success(data.detail || '¡Cita reservada exitosamente!');
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            toast.error(data.detail || 'No se pudo reservar la cita');
         }
     } catch (error) {
-        console.error('Error reserving:', error);
-        document.getElementById('cita-mensaje').innerText = 'Error al reservar la cita';
+        console.error('Error al reservar cita:', error);
+        toast.error('Error de conexión al reservar la cita');
     }
 }
 
+/**
+ * Cancelar una cita
+ */
 async function cancelarCita(citaId) {
-    console.log('=== cancelarCita called ===');
     const token = localStorage.getItem('access');
 
     try {
         const res = await fetch(`/api/citas/${citaId}/cancelar/`, {
             method: 'POST',
-            headers: { 'Authorization': 'Bearer ' + token }
+            headers: { 'Authorization': `Bearer ${token}` }
         });
 
         const data = await res.json();
-        console.log('Cancel response:', data);
 
         if (res.status === 401) {
-            window.location.href = '/login/';
+            toast.error('Sesión expirada. Por favor, inicia sesión');
+            setTimeout(() => window.location.href = '/login/', 2000);
             return;
         }
 
-        document.getElementById('cita-mensaje').innerText = data.detail || 'Acción completada';
         if (res.ok) {
-            setTimeout(() => location.reload(), 1000);
+            toast.success(data.detail || 'Cita cancelada correctamente');
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            toast.error(data.detail || 'No se pudo cancelar la cita');
         }
     } catch (error) {
-        console.error('Error canceling:', error);
-        document.getElementById('cita-mensaje').innerText = 'Error al cancelar la cita';
+        console.error('Error al cancelar cita:', error);
+        toast.error('Error de conexión al cancelar la cita');
     }
 }
 
+/**
+ * Completar una cita
+ */
 async function completarCita(citaId) {
-    console.log('=== completarCita called ===');
     const token = localStorage.getItem('access');
 
     try {
         const res = await fetch(`/api/citas/${citaId}/completar/`, {
             method: 'POST',
-            headers: { 'Authorization': 'Bearer ' + token }
+            headers: { 'Authorization': `Bearer ${token}` }
         });
 
         const data = await res.json();
-        console.log('Complete response:', data);
 
         if (res.status === 401) {
-            window.location.href = '/login/';
+            toast.error('Sesión expirada. Por favor, inicia sesión');
+            setTimeout(() => window.location.href = '/login/', 2000);
             return;
         }
 
-        document.getElementById('cita-mensaje').innerText = data.detail || 'Acción completada';
         if (res.ok) {
-            setTimeout(() => location.reload(), 1000);
+            toast.success(data.detail || '¡Cita completada exitosamente!');
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            toast.error(data.detail || 'No se pudo completar la cita');
         }
     } catch (error) {
-        console.error('Error completing:', error);
-        document.getElementById('cita-mensaje').innerText = 'Error al completar la cita';
+        console.error('Error al completar cita:', error);
+        toast.error('Error de conexión al completar la cita');
     }
 }
 
-async function init() {
-    console.log('=== INIT STARTED ===');
-    console.log('Current URL:', window.location.href);
-    console.log('Pathname:', window.location.pathname);
+/**
+ * Eliminar una cita
+ */
+async function eliminarCita(citaId, perfil) {
+    const token = localStorage.getItem('access');
 
     try {
-        console.log('Getting profile...');
-        const perfil = await window.getProfile();
-        console.log('Profile:', perfil);
+        const res = await fetch(`/api/citas/${citaId}/eliminar/`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
 
-        if (!perfil) {
-            console.error('No profile found, redirecting to login');
-            window.location.href = '/login/';
+        const data = await res.json();
+
+        if (res.status === 401) {
+            toast.error('Sesión expirada. Por favor, inicia sesión');
+            setTimeout(() => window.location.href = '/login/', 2000);
             return;
         }
 
-        // Obtener ID de la cita desde URL: /cita/<id>/
+        if (res.ok) {
+            toast.success(data.detail || 'Cita eliminada correctamente');
+            const redirectUrl = perfil.is_professional ? '/mis-citas/' : '/citas-disponibles/';
+            setTimeout(() => window.location.href = redirectUrl, 1500);
+        } else {
+            toast.error(data.detail || 'No se pudo eliminar la cita');
+        }
+    } catch (error) {
+        console.error('Error al eliminar cita:', error);
+        toast.error('Error de conexión al eliminar la cita');
+    }
+}
+
+/**
+ * Mostrar modal de confirmación
+ */
+function showConfirmation(title, message, action, isDangerous = false) {
+    let modal = document.getElementById('modal-confirm');
+
+    // Crear modal si no existe
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'modal-confirm';
+        modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+        modal.innerHTML = `
+            <div class="bg-white rounded-lg p-6 w-96 shadow-2xl">
+                <h2 id="modal-title" class="text-xl font-bold mb-3"></h2>
+                <p id="modal-message" class="text-gray-600 mb-6"></p>
+                <div class="flex justify-end space-x-3">
+                    <button id="modal-cancel"
+                            class="px-5 py-2 bg-gray-300 rounded-lg hover:bg-gray-400 transition">
+                        Cancelar
+                    </button>
+                    <button id="modal-accept"
+                            class="px-5 py-2 text-white rounded-lg transition">
+                        Aceptar
+                    </button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    }
+
+    // Configurar contenido
+    document.getElementById('modal-title').innerText = title;
+    document.getElementById('modal-message').innerText = message;
+
+    // Configurar color del botón según si es peligroso
+    const acceptBtn = document.getElementById('modal-accept');
+    if (isDangerous) {
+        acceptBtn.className = 'px-5 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition';
+    } else {
+        acceptBtn.className = 'px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition';
+    }
+
+    // Mostrar modal
+    modal.classList.remove('hidden');
+
+    // Eventos de los botones
+    document.getElementById('modal-cancel').onclick = () => {
+        modal.classList.add('hidden');
+    };
+
+    document.getElementById('modal-accept').onclick = () => {
+        modal.classList.add('hidden');
+        action();
+    };
+
+    // Cerrar con ESC
+    const escHandler = (e) => {
+        if (e.key === 'Escape') {
+            modal.classList.add('hidden');
+            document.removeEventListener('keydown', escHandler);
+        }
+    };
+    document.addEventListener('keydown', escHandler);
+
+    // Cerrar al hacer clic fuera
+    modal.onclick = (e) => {
+        if (e.target === modal) {
+            modal.classList.add('hidden');
+        }
+    };
+}
+
+/**
+ * Inicializar la página de detalle de cita
+ */
+async function init() {
+    try {
+        // Obtener perfil del usuario
+        const perfil = await window.getProfile();
+
+        if (!perfil) {
+            toast.error('Debes iniciar sesión para ver esta cita');
+            setTimeout(() => window.location.href = '/login/', 2000);
+            return;
+        }
+
+        // Extraer ID de la cita desde la URL: /cita/<id>/
         const pathParts = window.location.pathname.split('/').filter(part => part !== '');
-        console.log('Path parts:', pathParts);
-
-        // Buscar el ID después de 'cita'
         const citaIndex = pathParts.indexOf('cita');
-        console.log('cita index:', citaIndex);
-
         const citaId = citaIndex !== -1 ? pathParts[citaIndex + 1] : null;
-        console.log('Extracted cita ID:', citaId);
 
         if (!citaId) {
-            console.error('No cita ID found in URL');
-            document.getElementById('detalle-cita').innerText = 'ID de cita no encontrado en la URL.';
+            toast.error('ID de cita no encontrado en la URL');
+            document.getElementById('detalle-cita').innerHTML =
+                '<p class="text-red-500">ID de cita no válido</p>';
             return;
         }
 
         const token = localStorage.getItem('access');
-        console.log('Access token:', token ? 'exists' : 'missing');
 
         if (!token) {
-            console.error('No access token');
-            window.location.href = '/login/';
+            toast.error('Sesión no válida. Por favor, inicia sesión');
+            setTimeout(() => window.location.href = '/login/', 2000);
             return;
         }
 
-        console.log('Calling getCita...');
+        // Obtener datos de la cita
         const cita = await getCita(citaId, token);
 
         if (!cita) {
-            console.error('getCita returned null');
-            document.getElementById('detalle-cita').innerText = 'No se pudo cargar la cita.';
+            document.getElementById('detalle-cita').innerHTML =
+                '<p class="text-red-500">No se pudo cargar la cita</p>';
             return;
         }
 
-        console.log('Calling mostrarDetalles...');
+        // Mostrar detalles
         mostrarDetalles(cita, perfil);
 
-        // Botones
-        console.log('Attaching button handlers...');
-        document.getElementById('btn-reservar').onclick = () => reservarCita(citaId);
-        document.getElementById('btn-cancelar').onclick = () => cancelarCita(citaId);
-        document.getElementById('btn-completar').onclick = () => completarCita(citaId);
-
-        console.log('=== INIT COMPLETED ===');
-
     } catch (err) {
-        console.error('=== ERROR IN INIT ===');
-        console.error('Error type:', err.name);
-        console.error('Error message:', err.message);
-        console.error('Error stack:', err.stack);
-        document.getElementById('detalle-cita').innerText = 'Error al cargar la cita: ' + err.message;
+        console.error('Error en inicialización:', err);
+        toast.error('Error al cargar los detalles de la cita');
+        document.getElementById('detalle-cita').innerHTML =
+            `<p class="text-red-500">Error: ${err.message}</p>`;
     }
 }
 
-// Esperar a que DOM esté listo
+/**
+ * Esperar a que se cargue el DOM y las dependencias
+ */
 document.addEventListener("DOMContentLoaded", async () => {
-    // Esperar hasta que getProfile esté definido
-    while (typeof window.getProfile !== "function") {
-        console.log("Esperando a que auth.js cargue...");
-        await new Promise(r => setTimeout(r, 50));
+    // Esperar a que auth.js esté cargado
+    let attempts = 0;
+    while (typeof window.getProfile !== "function" && attempts < 50) {
+        await new Promise(r => setTimeout(r, 100));
+        attempts++;
     }
 
-    console.log("auth.js cargado, inicializando detalle de cita...");
+    if (typeof window.getProfile !== "function") {
+        console.error('auth.js no se cargó correctamente');
+        toast.error('Error al cargar dependencias');
+        return;
+    }
+
+    // Inicializar
     init();
 });

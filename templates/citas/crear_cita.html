@@ -4,23 +4,35 @@
 
 {% block content %}
 <div class="max-w-md mx-auto bg-white p-6 rounded shadow mt-6">
-    <h2 class="text-2xl font-bold mb-4 text-center">Crear Nueva Cita</h2>
+    <h2 class="text-2xl font-bold mb-4 text-center text-gray-800">Crear Nueva Cita</h2>
 
     <form id="crear-cita-form">
-        <label class="block mb-2">Fecha</label>
+        <label class="block mb-2 font-semibold">Fecha</label>
         <input type="date" id="fecha" name="fecha" class="w-full p-2 mb-4 border rounded" required>
 
-        <label class="block mb-2">Hora disponible</label>
+        <label class="block mb-2 font-semibold">Hora disponible</label>
         <select id="hora" name="hora" class="w-full p-2 mb-4 border rounded" required>
             <option value="">Selecciona una fecha...</option>
         </select>
 
-        <button id="crear-btn" type="submit" class="w-full bg-green-600 text-white p-2 rounded hover:bg-green-700">
+        <button id="crear-btn" type="submit" class="w-full bg-green-600 text-white p-2 rounded hover:bg-green-700 transition">
             Crear Cita
         </button>
     </form>
 
-    <div id="mensaje-cita" class="mt-2 text-center text-red-500"></div>
+    <div id="mensaje-cita" class="mt-2 text-center"></div>
+</div>
+
+<!-- Modal global de confirmación -->
+<div id="modal-confirm" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+  <div class="bg-white rounded-lg p-6 w-96 shadow-2xl">
+      <h2 id="modal-title" class="text-xl font-bold mb-3"></h2>
+      <p id="modal-message" class="text-gray-600 mb-6"></p>
+      <div class="flex justify-end space-x-3">
+          <button id="modal-cancel" class="px-5 py-2 bg-gray-300 rounded-lg hover:bg-gray-400 transition">Cancelar</button>
+          <button id="modal-accept" class="px-5 py-2 text-white rounded-lg transition">Aceptar</button>
+      </div>
+  </div>
 </div>
 
 <script src="{% static 'js/crear_cita.js' %}"></script>

@@ -5,16 +5,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Gestor de Citas{% endblock %}</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="{% static 'js/auth.js' %}" defer></script>
-    <script src="https://unpkg.com/alpinejs@3.12.0/dist/cdn.min.js" defer></script>
-    <script src="{% static 'js/notifications.js' %}" defer></script>
-</head>
 
-<body class="bg-gray-100 font-sans">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+     <!-- JS globales -->
+    <script src="{% static 'js/auth.js' %}" defer></script>
+    <script src="{% static 'js/notifications.js' %}" defer></script>
+
+    <!-- Alpine.js -->
+    <script src="https://unpkg.com/alpinejs@3.12.0/dist/cdn.min.js" defer></script>
+
+</head>
+<body class="bg-gray-100 font-sans min-h-screen flex flex-col">
 
     <!-- Header -->
-    <header class="bg-blue-600 text-white p-4 flex justify-between items-center">
+    <header class="bg-blue-600 text-white p-4 flex justify-between items-center shadow">
         <h1 class="text-xl font-bold">Gestor de Citas</h1>
 
         <!-- Menú dinámico -->
@@ -40,7 +46,7 @@
                     this.loggedIn = false;
                     window.location.href = '/';
                 }
-            }" x-init="init()" class="space-x-4">
+            }" x-init="init()" class="flex items-center space-x-4">
 
             <a href="/" class="hover:underline">Inicio</a>
 
@@ -48,38 +54,76 @@
             <template x-if="loggedIn">
                 <a href="/mis-citas/" class="hover:underline">Mis Citas</a>
             </template>
+
             <template x-if="loggedIn">
-                <a href="/notificaciones/" class="hover:underline">Notificaciones</a>
+                <div class="relative">
+                    <a href="/notificaciones/" class="hover:underline">Notificaciones</a>
+                    <span id="notification-badge"
+                          class="hidden absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                        0
+                    </span>
+                </div>
             </template>
 
             <!-- Links visibles solo si NO está logueado -->
             <template x-if="!loggedIn">
                 <a href="/login/" class="hover:underline">Login</a>
+            </template>
+            <template x-if="!loggedIn">
                 <a href="/registro/" class="hover:underline">Registro</a>
             </template>
 
-            <!-- Saludo -->
+            <!-- Saludo y logout -->
             <template x-if="loggedIn">
                 <span class="ml-2">Bienvenido, <strong x-text="userFirstName"></strong>!</span>
             </template>
-
-            <!-- Botón de logout -->
             <template x-if="loggedIn">
                 <button @click="logout()"
-                        class="bg-red-500 px-2 py-1 rounded hover:bg-red-600">
+                        class="bg-red-500 px-3 py-1 rounded hover:bg-red-600 transition">
                     Logout
                 </button>
             </template>
         </nav>
     </header>
 
-    <main class="p-6">
+    <!-- Contenido principal -->
+    <main class="flex-1 p-6">
         {% block content %}{% endblock %}
     </main>
 
-    <footer class="bg-gray-200 text-center p-4 mt-6">
+    <!-- Footer -->
+    <footer class="bg-gray-200 text-center p-4 mt-6 shadow-inner">
         &copy; 2025 Gestor de Citas
     </footer>
+
+    <!-- Toast global -->
+    <div
+        id="toast-container"
+        x-data="{
+            show: false,
+            message: '',
+            type: 'success',
+            showToast(msg, t = 'success') {
+                this.message = msg;
+                this.type = t;
+                this.show = true;
+                setTimeout(() => this.show = false, 3000);
+            }
+        }"
+        x-on:toast.window="showToast($event.detail?.message, $event.detail?.type)"
+        x-show="show"
+        x-transition.opacity.duration.500ms
+        class="fixed top-5 right-5 z-50 px-4 py-3 rounded shadow-lg text-white"
+        :class="{
+            'bg-green-600': type === 'success',
+            'bg-red-600': type === 'error',
+            'bg-blue-600': type === 'info',
+            'bg-yellow-600': type === 'warning'
+        }"
+        style="display: none;"
+    >
+        <span x-text="message"></span>
+    </div>
 
 </body>
 </html>

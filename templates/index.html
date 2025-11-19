@@ -1,20 +1,21 @@
 {% extends "base.html" %}
 {% load static %}
+
 {% block title %}Inicio{% endblock %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto bg-white p-6 rounded shadow">
-    <h2 class="text-2xl font-bold mb-4" id="bienvenida">Bienvenido!</h2>
+<div class="max-w-4xl mx-auto bg-white p-6 rounded shadow mt-6">
+    <h2 class="text-2xl font-bold mb-4 text-center text-gray-800" id="bienvenida">Bienvenido!</h2>
 
-    <p class="mb-4">
+    <p class="mb-4 text-center text-gray-700">
         Esta es tu plataforma para gestionar tus citas de manera fácil y rápida.
     </p>
 
-    <div id="acciones" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+    <div id="acciones" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6"></div>
 
     <div id="proximas-citas-container" class="mt-6 hidden">
         <h3 class="text-xl font-semibold mb-2">Próximas citas</h3>
-        <ul id="citas-list" class="list-disc pl-5">
+        <ul id="citas-list" class="list-disc pl-5 text-gray-700">
             <li>Cargando próximas citas...</li>
         </ul>
     </div>

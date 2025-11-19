@@ -5,12 +5,14 @@
 
 {% block content %}
 <div class="max-w-md mx-auto bg-white p-6 rounded shadow mt-6">
-    <h2 class="text-2xl font-bold mb-4 text-center">Iniciar Sesión</h2>
+    <h2 class="text-2xl font-bold mb-4 text-center text-gray-800">Iniciar Sesión</h2>
 
-    <form id="login-form">
-        <input type="email" name="email" placeholder="Email" class="w-full p-2 mb-2 border rounded" required>
-        <input type="password" name="password" placeholder="Contraseña" class="w-full p-2 mb-2 border rounded" required>
-        <button type="submit" class="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700">Login</button>
+    <form id="login-form" class="space-y-3">
+        <input type="email" name="email" placeholder="Email" class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400" required>
+        <input type="password" name="password" placeholder="Contraseña" class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400" required>
+        <button type="submit" class="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700 transition">
+            Login
+        </button>
     </form>
 
     <div id="login-mensaje" class="mt-2 text-center text-red-500"></div>
