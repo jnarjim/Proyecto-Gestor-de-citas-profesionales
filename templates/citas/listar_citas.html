@@ -9,6 +9,13 @@
     <!-- Botón crear cita -->
     <div id="btn-crear-cita" class="mb-4 text-center"></div>
 
+    <!-- Botón historial -->
+    <div class="mb-4 text-center">
+        <a href="{% url 'historial_citas' %}" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+            Ver Historial
+        </a>
+    </div>
+
     <!-- Lista de citas -->
     <ul id="mis-citas-list" class="divide-y divide-gray-200">
         <li class="py-4 text-center text-gray-500">Cargando citas...</li>

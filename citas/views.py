@@ -4,8 +4,10 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.exceptions import ValidationError
 
+from django.db.models import Q
 from django.utils.dateparse import parse_date
 from notificaciones.models import Notificacion
+from . import models
 from .models import Cita
 from .serializers import CitaSerializer, CrearCitaSerializer
 from django.shortcuts import get_object_or_404, render
@@ -53,31 +55,15 @@ class MisCitasView(generics.ListAPIView):
     def get_queryset(self):
         user = self.request.user
 
-        # Base queryset según tipo de usuario
+        # Solo citas activas
         if user.is_professional:
-            queryset = Cita.objects.filter(profesional=user)
+            queryset = Cita.objects.filter(profesional=user, estado__in=["pendiente", "confirmada"])
         else:
-            queryset = Cita.objects.filter(cliente=user)
-
-        # Filtrado opcional por uno o varios estados
-        estado = self.request.query_params.get("estado")
-        if estado:
-            estados = [e.strip() for e in estado.split(",")]
-            queryset = queryset.filter(estado__in=estados)
-
-        # Filtrado opcional por rango de horas
-        hora_inicio = self.request.query_params.get("hora_inicio")
-        hora_fin = self.request.query_params.get("hora_fin")
-        if hora_inicio and hora_fin:
-            hora_inicio_obj = parse_time(hora_inicio)
-            hora_fin_obj = parse_time(hora_fin)
-            if hora_inicio_obj and hora_fin_obj:
-                queryset = queryset.filter(hora__gte=hora_inicio_obj, hora__lte=hora_fin_obj)
+            queryset = Cita.objects.filter(cliente=user, estado__in=["pendiente", "confirmada"])
 
         # Excluir horas pasadas si la fecha es hoy
         hoy = date.today()
-        if queryset.exists():
-            queryset = queryset.exclude(fecha=hoy, hora__lt=datetime.now().time())
+        queryset = queryset.exclude(fecha=hoy, hora__lt=datetime.now().time())
 
         return queryset.order_by("fecha", "hora")
 
@@ -412,3 +398,23 @@ class CitasDisponiblesGlobalView(generics.ListAPIView):
         queryset = queryset.exclude(fecha=hoy, hora__lt=datetime.now().time())
 
         return queryset.order_by("fecha", "hora")
+
+class HistorialCitasView(generics.ListAPIView):
+    serializer_class = CitaSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+
+        if user.is_professional:
+            queryset = Cita.objects.filter(profesional=user)
+        else:
+            queryset = Cita.objects.filter(cliente=user)
+
+        # Solo citas canceladas o completadas y citas pasadas
+        queryset = queryset.filter(
+            Q(estado__in=["cancelada", "completada"]) |
+            Q(fecha__lt=date.today())
+        ).order_by("-fecha", "-hora")
+
+        return queryset

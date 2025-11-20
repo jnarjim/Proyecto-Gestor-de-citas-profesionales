@@ -10,6 +10,7 @@ from .views import (
     EliminarCitaView,
     CitasDisponiblesGlobalView,
     CitaDetalleView,
+    HistorialCitasView,
 )
 
 urlpatterns = [
@@ -22,4 +23,5 @@ urlpatterns = [
     path('<int:pk>/completar/', CompletarCitaView.as_view(), name='completar_cita'),
     path('<int:pk>/eliminar/', EliminarCitaView.as_view(), name='eliminar_cita'),
     path('disponibles/', CitasDisponiblesGlobalView.as_view(), name='citas_disponibles_global'),
+    path('historial/', HistorialCitasView.as_view(), name='historial_citas_api'),
 ]
