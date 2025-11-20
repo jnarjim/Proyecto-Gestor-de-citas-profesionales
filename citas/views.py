@@ -7,10 +7,9 @@ from rest_framework.exceptions import ValidationError
 from django.db.models import Q
 from django.utils.dateparse import parse_date
 from notificaciones.models import Notificacion
-from . import models
 from .models import Cita
 from .serializers import CitaSerializer, CrearCitaSerializer
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, render, redirect
 from datetime import date, datetime
 from django.utils.dateparse import parse_time
 
@@ -28,6 +27,11 @@ def crear_cita(request):
 
 def citas_disponibles(request):
     return render(request, "citas/citas_disponibles.html")
+
+def panel_profesional(request):
+    if not request.user.is_professional:
+        return redirect('/')
+    return render(request, "citas/panel_profesional.html")
 
 class CitasDisponiblesProfesionalView(generics.ListAPIView):
     serializer_class = CitaSerializer
@@ -418,3 +422,23 @@ class HistorialCitasView(generics.ListAPIView):
         ).order_by("-fecha", "-hora")
 
         return queryset
+
+class PanelProfesionalView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        if not user.is_professional:
+            return Response({"detail": "Solo profesionales"}, status=403)
+
+        hoy = date.today()
+        citas_hoy = Cita.objects.filter(profesional=user, fecha=hoy)
+        pendientes = citas_hoy.filter(estado="confirmada")
+        completadas = citas_hoy.filter(estado="completada")
+
+        return Response({
+            "citas_hoy": citas_hoy.count(),
+            "pendientes": pendientes.count(),
+            "completadas": completadas.count(),
+            "detalles": CitaSerializer(citas_hoy, many=True).data if citas_hoy.exists() else []
+        })

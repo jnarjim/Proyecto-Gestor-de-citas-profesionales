@@ -84,6 +84,15 @@ async function initPage() {
             ` : ''}
         `;
 
+        // Solo para profesionales: añadir botón al panel
+        if (perfil.is_professional) {
+            const btnPanel = document.createElement('a');
+            btnPanel.href = '/panel-profesional/';
+            btnPanel.className = 'block bg-purple-500 text-white p-4 rounded text-center hover:bg-blue-600 transition mt-2';
+            btnPanel.textContent = 'Panel Profesional';
+            accionesDiv.appendChild(btnPanel);
+        }
+
         cargarCitas();
 
     } else {

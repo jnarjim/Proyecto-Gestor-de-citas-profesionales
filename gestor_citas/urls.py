@@ -31,6 +31,7 @@ urlpatterns = [
     path('crear-cita/', citas_views.crear_cita, name='crear_cita'),
     path('citas-disponibles/', citas_views.citas_disponibles, name='citas_disponibles'),
     path('citas/historial/', lambda request: render(request, 'citas/historial_citas.html'), name='historial_citas'),
+    path('panel-profesional/', lambda request: render(request, 'profesional/panel_profesional.html'), name='panel_profesional'),
 
     # APIs
     path('api/usuarios/', include('usuarios.urls')),
