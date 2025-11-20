@@ -196,12 +196,19 @@ class CancelarCitaView(APIView):
                     status=status.HTTP_403_FORBIDDEN
                 )
 
-            # Si el profesional PERMITE reabrir citas → queda libre
+            # No permitir modificar citas canceladas o completadas
+            if cita.estado in ["cancelada", "completada"]:
+                return Response(
+                    {"detail": "Esta cita ya no puede modificarse."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # Si el profesional PERMITE reabrir citas → vuelve a estar libre
             if cita.profesional.permite_reabrir_citas:
                 cita.cliente = None
                 cita.estado = "pendiente"
 
-            # Si NO permite reabrir → pasa a cancelada y NO queda libre
+            # Si NO permite → pasa a cancelada
             else:
                 cita.estado = "cancelada"
 
@@ -228,6 +235,13 @@ class CancelarCitaView(APIView):
                 return Response(
                     {"detail": "No puedes cancelar una cita de otro profesional."},
                     status=status.HTTP_403_FORBIDDEN
+                )
+
+            # No se puede cancelar una cita pendiente (sin cliente)
+            if cita.estado == "pendiente":
+                return Response(
+                    {"detail": "No puedes cancelar una cita pendiente. Solo las reservadas pueden ser canceladas."},
+                    status=status.HTTP_400_BAD_REQUEST
                 )
 
             cita.estado = "cancelada"
@@ -323,13 +337,21 @@ class EliminarCitaView(APIView):
                 return Response({"detail": "No puedes eliminar una cita que no es tuya."},
                                 status=status.HTTP_403_FORBIDDEN)
 
+            # No permitir modificar citas canceladas o completadas
+            if cita.estado in ["cancelada", "completada"]:
+                return Response(
+                    {"detail": "No puedes modificar una cita cancelada o completada."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # Aquí SÍ permite reabrir solo si no está cancelada todavía:
             if cita.profesional.permite_reabrir_citas:
                 cita.cliente = None
                 cita.estado = "pendiente"
-                cita.save()
             else:
                 cita.estado = "cancelada"
-                cita.save()
+
+            cita.save()
 
             Notificacion.objects.create(
                 receptor=cita.profesional,
