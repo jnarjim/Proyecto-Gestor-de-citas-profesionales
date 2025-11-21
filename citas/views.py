@@ -428,17 +428,27 @@ class PanelProfesionalView(APIView):
 
     def get(self, request):
         user = request.user
+
+        # Solo profesionales
         if not user.is_professional:
             return Response({"detail": "Solo profesionales"}, status=403)
 
         hoy = date.today()
-        citas_hoy = Cita.objects.filter(profesional=user, fecha=hoy)
-        pendientes = citas_hoy.filter(estado="confirmada")
-        completadas = citas_hoy.filter(estado="completada")
+
+        # Todas las citas del profesional
+        citas = Cita.objects.filter(profesional=user)
+
+        # Contadores correctos
+        citas_hoy = citas.filter(fecha=hoy).count()
+        pendientes = citas.filter(estado="pendiente").count()
+        completadas = citas.filter(estado="completada").count()
+
+        # Serializar
+        detalles = CitaSerializer(citas.order_by("fecha", "hora"), many=True).data
 
         return Response({
-            "citas_hoy": citas_hoy.count(),
-            "pendientes": pendientes.count(),
-            "completadas": completadas.count(),
-            "detalles": CitaSerializer(citas_hoy, many=True).data if citas_hoy.exists() else []
+            "citas_hoy": citas_hoy,
+            "pendientes": pendientes,
+            "completadas": completadas,
+            "detalles": detalles
         })
