@@ -1,8 +1,3 @@
-// detalle_cita.js - Gestión de detalle de cita
-
-/**
- * Obtener datos de una cita específica
- */
 async function getCita(citaId, token) {
     const url = `/api/citas/${citaId}/`;
 
@@ -35,9 +30,6 @@ async function getCita(citaId, token) {
     }
 }
 
-/**
- * Mostrar detalles de la cita en el DOM
- */
 function mostrarDetalles(cita, perfil) {
     const detalleDiv = document.getElementById('detalle-cita');
 
@@ -46,7 +38,6 @@ function mostrarDetalles(cita, perfil) {
         return;
     }
 
-    // Formatear datos
     const fecha = cita.fecha || 'No disponible';
     const hora = cita.hora || 'No disponible';
     const estado = cita.estado || 'No disponible';
@@ -59,75 +50,131 @@ function mostrarDetalles(cita, perfil) {
         ? `${cita.cliente.first_name || ''} ${cita.cliente.last_name || ''}`.trim()
         : 'Libre';
 
-    // Mapeo de estados con colores
-    const estadoClasses = {
-        'pendiente': 'text-yellow-600',
-        'confirmada': 'text-blue-600',
-        'completada': 'text-green-600',
-        'cancelada': 'text-red-600'
-    };
+    const estadoInfo = getEstadoInfo(cita.estado);
 
-    const estadoClass = estadoClasses[cita.estado] || 'text-gray-600';
-
-    // Renderizar HTML
     detalleDiv.innerHTML = `
-        <div class="space-y-3">
-            <div class="grid grid-cols-2 gap-4">
-                <div class="text-left">
-                    <p class="text-gray-600 text-sm">Profesional</p>
-                    <p class="font-semibold">${profesionalNombre}</p>
+        <!-- Estado badge destacado -->
+        <div class="mb-8 flex justify-center">
+            <span class="inline-flex items-center px-6 py-3 rounded-full text-base font-semibold ${estadoInfo.bgColor} ${estadoInfo.textColor}">
+                ${estadoInfo.icon}
+                ${estadoInfo.text}
+            </span>
+        </div>
+
+        <!-- Grid de información -->
+        <div class="space-y-6">
+            <!-- Profesional y Cliente -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-blue-50 rounded-xl p-5 border-l-4 border-blue-500">
+                    <div class="flex items-center mb-3">
+                        <svg class="w-5 h-5 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                        </svg>
+                        <p class="text-sm font-medium text-blue-800">Profesional</p>
+                    </div>
+                    <p class="text-lg font-bold text-gray-800">${profesionalNombre}</p>
                 </div>
-                <div class="text-left">
-                    <p class="text-gray-600 text-sm">Cliente</p>
-                    <p class="font-semibold">${clienteNombre}</p>
+
+                <div class="bg-green-50 rounded-xl p-5 border-l-4 border-green-500">
+                    <div class="flex items-center mb-3">
+                        <svg class="w-5 h-5 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                        </svg>
+                        <p class="text-sm font-medium text-green-800">Cliente</p>
+                    </div>
+                    <p class="text-lg font-bold text-gray-800">${clienteNombre}</p>
                 </div>
             </div>
-            <div class="grid grid-cols-2 gap-4">
-                <div class="text-left">
-                    <p class="text-gray-600 text-sm">Fecha</p>
-                    <p class="font-semibold">${fecha}</p>
+
+            <!-- Fecha y Hora -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-purple-50 rounded-xl p-5 border-l-4 border-purple-500">
+                    <div class="flex items-center mb-3">
+                        <svg class="w-5 h-5 text-purple-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                        <p class="text-sm font-medium text-purple-800">Fecha</p>
+                    </div>
+                    <p class="text-lg font-bold text-gray-800">${fecha}</p>
                 </div>
-                <div class="text-left">
-                    <p class="text-gray-600 text-sm">Hora</p>
-                    <p class="font-semibold">${hora}</p>
+
+                <div class="bg-orange-50 rounded-xl p-5 border-l-4 border-orange-500">
+                    <div class="flex items-center mb-3">
+                        <svg class="w-5 h-5 text-orange-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <p class="text-sm font-medium text-orange-800">Hora</p>
+                    </div>
+                    <p class="text-lg font-bold text-gray-800">${hora}</p>
                 </div>
-            </div>
-            <div class="text-left">
-                <p class="text-gray-600 text-sm">Estado</p>
-                <p class="font-semibold ${estadoClass} uppercase">${estado}</p>
             </div>
         </div>
     `;
 
-    // Configurar visibilidad de botones
     configurarBotones(cita, perfil);
 }
 
-/**
- * Configurar visibilidad y eventos de botones según rol y estado
- */
+function getEstadoInfo(estado) {
+    const estados = {
+        'pendiente': {
+            text: 'Pendiente',
+            bgColor: 'bg-yellow-100',
+            textColor: 'text-yellow-800',
+            icon: `<svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>`
+        },
+        'confirmada': {
+            text: 'Confirmada',
+            bgColor: 'bg-blue-100',
+            textColor: 'text-blue-800',
+            icon: `<svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>`
+        },
+        'completada': {
+            text: 'Completada',
+            bgColor: 'bg-green-100',
+            textColor: 'text-green-800',
+            icon: `<svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>`
+        },
+        'cancelada': {
+            text: 'Cancelada',
+            bgColor: 'bg-red-100',
+            textColor: 'text-red-800',
+            icon: `<svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>`
+        }
+    };
+    return estados[estado] || {
+        text: estado,
+        bgColor: 'bg-gray-100',
+        textColor: 'text-gray-800',
+        icon: ''
+    };
+}
+
 function configurarBotones(cita, perfil) {
     const btnReservar = document.getElementById('btn-reservar');
     const btnCancelar = document.getElementById('btn-cancelar');
     const btnCompletar = document.getElementById('btn-completar');
     const btnEliminar = document.getElementById('btn-eliminar');
 
-    // Verificar que todos los botones existen
     if (!btnReservar || !btnCancelar || !btnCompletar || !btnEliminar) {
         console.error('Algunos botones no se encontraron en el DOM');
         return;
     }
 
-    // Ocultar todos por defecto
     btnReservar.classList.add('hidden');
     btnCancelar.classList.add('hidden');
     btnCompletar.classList.add('hidden');
     btnEliminar.classList.add('hidden');
 
     if (perfil.is_professional) {
-        // ===== PROFESIONAL =====
         if (cita.profesional && cita.profesional.id === perfil.id) {
-            // Botón CANCELAR - para citas pendientes o confirmadas
             if (cita.estado === 'pendiente' || cita.estado === 'confirmada') {
                 btnCancelar.classList.remove('hidden');
                 btnCancelar.onclick = () => showConfirmation(
@@ -137,7 +184,6 @@ function configurarBotones(cita, perfil) {
                 );
             }
 
-            // Botón COMPLETAR - solo para citas confirmadas
             if (cita.estado === 'confirmada') {
                 btnCompletar.classList.remove('hidden');
                 btnCompletar.onclick = () => showConfirmation(
@@ -147,19 +193,15 @@ function configurarBotones(cita, perfil) {
                 );
             }
 
-            // Botón ELIMINAR - profesional puede eliminar sus propias citas
             btnEliminar.classList.remove('hidden');
             btnEliminar.onclick = () => showConfirmation(
                 '¿Estás seguro de que deseas eliminar esta cita?',
                 'Esta acción no se puede deshacer.',
                 () => eliminarCita(cita.id, perfil),
-                true // Marcar como peligrosa
+                true
             );
         }
     } else {
-        // ===== CLIENTE =====
-
-        // Botón RESERVAR - solo si la cita está libre y pendiente
         if (!cita.cliente && cita.estado === 'pendiente') {
             btnReservar.classList.remove('hidden');
             btnReservar.onclick = () => showConfirmation(
@@ -169,7 +211,6 @@ function configurarBotones(cita, perfil) {
             );
         }
 
-        // Botón CANCELAR - si el cliente tiene la cita reservada
         if (cita.cliente && cita.cliente.id === perfil.id) {
             if (cita.estado === 'pendiente' || cita.estado === 'confirmada') {
                 btnCancelar.classList.remove('hidden');
@@ -180,7 +221,6 @@ function configurarBotones(cita, perfil) {
                 );
             }
 
-            // Cliente puede eliminar su propia reserva
             btnEliminar.classList.remove('hidden');
             btnEliminar.onclick = () => showConfirmation(
                 '¿Estás seguro de que deseas eliminar esta cita?',
@@ -192,9 +232,6 @@ function configurarBotones(cita, perfil) {
     }
 }
 
-/**
- * Reservar una cita
- */
 async function reservarCita(citaId) {
     const token = localStorage.getItem('access');
 
@@ -224,9 +261,6 @@ async function reservarCita(citaId) {
     }
 }
 
-/**
- * Cancelar una cita
- */
 async function cancelarCita(citaId) {
     const token = localStorage.getItem('access');
 
@@ -256,9 +290,6 @@ async function cancelarCita(citaId) {
     }
 }
 
-/**
- * Completar una cita
- */
 async function completarCita(citaId) {
     const token = localStorage.getItem('access');
 
@@ -288,9 +319,6 @@ async function completarCita(citaId) {
     }
 }
 
-/**
- * Eliminar una cita
- */
 async function eliminarCita(citaId, perfil) {
     const token = localStorage.getItem('access');
 
@@ -321,28 +349,24 @@ async function eliminarCita(citaId, perfil) {
     }
 }
 
-/**
- * Mostrar modal de confirmación
- */
 function showConfirmation(title, message, action, isDangerous = false) {
     let modal = document.getElementById('modal-confirm');
 
-    // Crear modal si no existe
     if (!modal) {
         modal = document.createElement('div');
         modal.id = 'modal-confirm';
-        modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+        modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
         modal.innerHTML = `
-            <div class="bg-white rounded-lg p-6 w-96 shadow-2xl">
-                <h2 id="modal-title" class="text-xl font-bold mb-3"></h2>
+            <div class="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl transform transition-all">
+                <h2 id="modal-title" class="text-xl font-bold mb-3 text-gray-800"></h2>
                 <p id="modal-message" class="text-gray-600 mb-6"></p>
-                <div class="flex justify-end space-x-3">
+                <div class="flex flex-col sm:flex-row justify-end gap-3">
                     <button id="modal-cancel"
-                            class="px-5 py-2 bg-gray-300 rounded-lg hover:bg-gray-400 transition">
+                            class="px-5 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition font-medium">
                         Cancelar
                     </button>
                     <button id="modal-accept"
-                            class="px-5 py-2 text-white rounded-lg transition">
+                            class="px-5 py-2 text-white rounded-lg transition font-medium">
                         Aceptar
                     </button>
                 </div>
@@ -351,22 +375,18 @@ function showConfirmation(title, message, action, isDangerous = false) {
         document.body.appendChild(modal);
     }
 
-    // Configurar contenido
     document.getElementById('modal-title').innerText = title;
     document.getElementById('modal-message').innerText = message;
 
-    // Configurar color del botón según si es peligroso
     const acceptBtn = document.getElementById('modal-accept');
     if (isDangerous) {
-        acceptBtn.className = 'px-5 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition';
+        acceptBtn.className = 'px-5 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-medium shadow-md hover:shadow-lg';
     } else {
-        acceptBtn.className = 'px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition';
+        acceptBtn.className = 'px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium shadow-md hover:shadow-lg';
     }
 
-    // Mostrar modal
     modal.classList.remove('hidden');
 
-    // Eventos de los botones
     document.getElementById('modal-cancel').onclick = () => {
         modal.classList.add('hidden');
     };
@@ -376,7 +396,6 @@ function showConfirmation(title, message, action, isDangerous = false) {
         action();
     };
 
-    // Cerrar con ESC
     const escHandler = (e) => {
         if (e.key === 'Escape') {
             modal.classList.add('hidden');
@@ -385,7 +404,6 @@ function showConfirmation(title, message, action, isDangerous = false) {
     };
     document.addEventListener('keydown', escHandler);
 
-    // Cerrar al hacer clic fuera
     modal.onclick = (e) => {
         if (e.target === modal) {
             modal.classList.add('hidden');
@@ -393,12 +411,8 @@ function showConfirmation(title, message, action, isDangerous = false) {
     };
 }
 
-/**
- * Inicializar la página de detalle de cita
- */
 async function init() {
     try {
-        // Obtener perfil del usuario
         const perfil = await window.getProfile();
 
         if (!perfil) {
@@ -407,7 +421,6 @@ async function init() {
             return;
         }
 
-        // Extraer ID de la cita desde la URL: /cita/<id>/
         const pathParts = window.location.pathname.split('/').filter(part => part !== '');
         const citaIndex = pathParts.indexOf('cita');
         const citaId = citaIndex !== -1 ? pathParts[citaIndex + 1] : null;
@@ -415,7 +428,7 @@ async function init() {
         if (!citaId) {
             toast.error('ID de cita no encontrado en la URL');
             document.getElementById('detalle-cita').innerHTML =
-                '<p class="text-red-500">ID de cita no válido</p>';
+                '<p class="text-red-500 text-center py-8">ID de cita no válido</p>';
             return;
         }
 
@@ -427,31 +440,25 @@ async function init() {
             return;
         }
 
-        // Obtener datos de la cita
         const cita = await getCita(citaId, token);
 
         if (!cita) {
             document.getElementById('detalle-cita').innerHTML =
-                '<p class="text-red-500">No se pudo cargar la cita</p>';
+                '<p class="text-red-500 text-center py-8">No se pudo cargar la cita</p>';
             return;
         }
 
-        // Mostrar detalles
         mostrarDetalles(cita, perfil);
 
     } catch (err) {
         console.error('Error en inicialización:', err);
         toast.error('Error al cargar los detalles de la cita');
         document.getElementById('detalle-cita').innerHTML =
-            `<p class="text-red-500">Error: ${err.message}</p>`;
+            `<p class="text-red-500 text-center py-8">Error: ${err.message}</p>`;
     }
 }
 
-/**
- * Esperar a que se cargue el DOM y las dependencias
- */
 document.addEventListener("DOMContentLoaded", async () => {
-    // Esperar a que auth.js esté cargado
     let attempts = 0;
     while (typeof window.getProfile !== "function" && attempts < 50) {
         await new Promise(r => setTimeout(r, 100));
@@ -464,6 +471,5 @@ document.addEventListener("DOMContentLoaded", async () => {
         return;
     }
 
-    // Inicializar
     init();
 });

@@ -4,20 +4,119 @@
 {% block title %}Inicio{% endblock %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto bg-white p-6 rounded shadow mt-6">
-    <h2 class="text-2xl font-bold mb-4 text-center text-gray-800" id="bienvenida">Bienvenido!</h2>
+<div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4">
+    <div class="max-w-5xl mx-auto">
 
-    <p class="mb-4 text-center text-gray-700">
-        Esta es tu plataforma para gestionar tus citas de manera fácil y rápida.
-    </p>
+        <!-- Header con bienvenida -->
+        <div class="text-center mb-12">
+            <h1 class="text-4xl md:text-5xl font-bold text-gray-800 mb-4" id="bienvenida">
+                Bienvenido!
+            </h1>
+            <p class="text-gray-600 text-lg" id="subtitulo">Gestiona tus citas de forma profesional</p>
+        </div>
 
-    <div id="acciones" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6"></div>
+        <!-- Explicación para usuarios no logueados -->
+        <div id="explicacion" class="mb-12 hidden">
+            <div class="bg-white rounded-2xl shadow-xl p-8 md:p-12 text-center">
+                <div class="mb-6">
+                    <div class="inline-flex items-center justify-center w-20 h-20 bg-blue-100 rounded-full mb-4">
+                        <svg class="w-10 h-10 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                    </div>
+                </div>
+                <h2 class="text-3xl font-bold text-gray-800 mb-4">Tu gestor de citas profesional</h2>
+                <p class="text-gray-600 text-lg mb-8 max-w-2xl mx-auto">
+                    Reserva y gestiona citas con profesionales de manera rápida y sencilla.
+                    Recibe notificaciones y mantén el control de tu agenda.
+                </p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <a href="/registro/" class="inline-flex items-center justify-center bg-blue-600 text-white px-8 py-4 rounded-lg hover:bg-blue-700 transition shadow-lg hover:shadow-xl transform hover:-translate-y-1 font-semibold text-lg">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
+                        </svg>
+                        Registrarse
+                    </a>
+                    <a href="/login/" class="inline-flex items-center justify-center bg-white text-blue-600 border-2 border-blue-600 px-8 py-4 rounded-lg hover:bg-blue-50 transition font-semibold text-lg">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
+                        </svg>
+                        Iniciar sesión
+                    </a>
+                </div>
+            </div>
+        </div>
 
-    <div id="proximas-citas-container" class="mt-6 hidden">
-        <h3 class="text-xl font-semibold mb-2">Próximas citas</h3>
-        <ul id="citas-list" class="list-disc pl-5 text-gray-700">
-            <li>Cargando próximas citas...</li>
-        </ul>
+        <!-- Contenido para usuarios logueados -->
+        <div id="contenido-logueado" class="hidden">
+
+            <!-- Resumen panel profesional -->
+            <div id="resumen-profesional" class="mb-8 hidden">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-blue-500">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-500 text-sm font-medium mb-1">Citas hoy</p>
+                                <p class="text-3xl font-bold text-gray-800" id="count-citas-hoy">0</p>
+                            </div>
+                            <div class="bg-blue-100 rounded-full p-3">
+                                <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-yellow-500">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-500 text-sm font-medium mb-1">Pendientes</p>
+                                <p class="text-3xl font-bold text-gray-800" id="count-pendientes">0</p>
+                            </div>
+                            <div class="bg-yellow-100 rounded-full p-3">
+                                <svg class="w-8 h-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-green-500">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-500 text-sm font-medium mb-1">Completadas</p>
+                                <p class="text-3xl font-bold text-gray-800" id="count-completadas">0</p>
+                            </div>
+                            <div class="bg-green-100 rounded-full p-3">
+                                <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Próximas citas -->
+            <div id="proximas-citas-container" class="mb-8 hidden">
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4 flex items-center">
+                        <svg class="w-6 h-6 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        Próximas citas
+                    </h3>
+                    <ul id="citas-list" class="space-y-3">
+                        <li class="text-gray-500">Cargando próximas citas...</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Acciones rápidas -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h3 class="text-2xl font-bold text-gray-800 mb-6">Acciones rápidas</h3>
+                <div id="acciones" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+            </div>
+
+        </div>
     </div>
 </div>
 
