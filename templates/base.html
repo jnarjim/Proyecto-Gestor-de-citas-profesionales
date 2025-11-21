@@ -9,91 +9,92 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 
-     <!-- JS globales -->
+    <!-- JS globales -->
     <script src="{% static 'js/auth.js' %}" defer></script>
     <script src="{% static 'js/notifications.js' %}" defer></script>
 
     <!-- Alpine.js -->
     <script src="https://unpkg.com/alpinejs@3.12.0/dist/cdn.min.js" defer></script>
-
 </head>
-<body class="bg-gray-100 font-sans min-h-screen flex flex-col">
+<body class="bg-gray-50 font-sans min-h-screen flex flex-col">
 
     <!-- Header -->
-    <header class="bg-blue-600 text-white p-4 flex justify-between items-center shadow">
-        <h1 class="text-xl font-bold">Gestor de Citas</h1>
+    <header class="bg-white shadow-md border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-gray-800">Gestor de Citas</h1>
 
-        <!-- Menú dinámico -->
-        <nav x-data="{
-                loggedIn: false,
-                userFirstName: '',
-                isProfessional: false,
-                async init() {
-                    const perfil = await getProfile();
-                    if (perfil) {
-                        this.loggedIn = true;
-                        this.userFirstName = perfil.first_name;
-                        this.isProfessional = perfil.is_professional;
-                        localStorage.setItem('user_first_name', perfil.first_name);
-                        localStorage.setItem('is_professional', perfil.is_professional);
+            <!-- Menú dinámico -->
+            <nav x-data="{
+                    loggedIn: false,
+                    userFirstName: '',
+                    isProfessional: false,
+                    async init() {
+                        const perfil = await getProfile();
+                        if (perfil) {
+                            this.loggedIn = true;
+                            this.userFirstName = perfil.first_name;
+                            this.isProfessional = perfil.is_professional;
+                            localStorage.setItem('user_first_name', perfil.first_name);
+                            localStorage.setItem('is_professional', perfil.is_professional);
+                        }
+                    },
+                    logout() {
+                        localStorage.removeItem('access');
+                        localStorage.removeItem('refresh');
+                        localStorage.removeItem('user_first_name');
+                        localStorage.removeItem('is_professional');
+                        this.loggedIn = false;
+                        window.location.href = '/';
                     }
-                },
-                logout() {
-                    localStorage.removeItem('access');
-                    localStorage.removeItem('refresh');
-                    localStorage.removeItem('user_first_name');
-                    localStorage.removeItem('is_professional');
-                    this.loggedIn = false;
-                    window.location.href = '/';
-                }
-            }" x-init="init()" class="flex items-center space-x-4">
+                }" x-init="init()" class="flex items-center space-x-4">
 
-            <a href="/" class="hover:underline">Inicio</a>
+                <a href="/" class="text-gray-700 hover:text-blue-600 transition">Inicio</a>
 
-            <!-- Links visibles solo si está logueado -->
-            <template x-if="loggedIn">
-                <a href="/mis-citas/" class="hover:underline">Mis Citas</a>
-            </template>
+                <!-- Links visibles solo si está logueado -->
+                <template x-if="loggedIn">
+                    <a href="/mis-citas/" class="text-gray-700 hover:text-blue-600 transition">Mis Citas</a>
+                </template>
 
-            <template x-if="loggedIn">
-                <div class="relative">
-                    <a href="/notificaciones/" class="hover:underline">Notificaciones</a>
-                    <span id="notification-badge"
-                          class="hidden absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                        0
-                    </span>
-                </div>
-            </template>
+                <template x-if="loggedIn">
+                    <div class="relative">
+                        <a href="/notificaciones/" class="text-gray-700 hover:text-green-600 transition">Notificaciones</a>
+                        <span id="notification-badge"
+                              class="hidden absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                            0
+                        </span>
+                    </div>
+                </template>
 
-            <!-- Links visibles solo si NO está logueado -->
-            <template x-if="!loggedIn">
-                <a href="/login/" class="hover:underline">Login</a>
-            </template>
-            <template x-if="!loggedIn">
-                <a href="/registro/" class="hover:underline">Registro</a>
-            </template>
+                <!-- Links visibles solo si NO está logueado -->
+                <template x-if="!loggedIn">
+                    <a href="/login/" class="text-gray-700 hover:text-blue-600 transition">Login</a>
+                </template>
+                <template x-if="!loggedIn">
+                    <a href="/registro/" class="text-gray-700 hover:text-green-600 transition">Registro</a>
+                </template>
 
-            <!-- Saludo y logout -->
-            <template x-if="loggedIn">
-                <span class="ml-2">Bienvenido, <strong x-text="userFirstName"></strong>!</span>
-            </template>
-            <template x-if="loggedIn">
-                <button @click="logout()"
-                        class="bg-red-500 px-3 py-1 rounded hover:bg-red-600 transition">
-                    Logout
-                </button>
-            </template>
-        </nav>
+                <!-- Saludo y logout -->
+                <template x-if="loggedIn">
+                    <span class="ml-2 text-gray-800">¡Hola, <strong x-text="userFirstName"></strong>!</span>
+                </template>
+                <template x-if="loggedIn">
+                    <button @click="logout()"
+                            class="ml-2 bg-red-500 px-3 py-1 rounded-lg text-white font-medium hover:bg-red-600 transition">
+                        Logout
+                    </button>
+                </template>
+            </nav>
+        </div>
     </header>
 
     <!-- Contenido principal -->
-    <main class="flex-1 p-6">
+    <main class="flex-1 max-w-7xl mx-auto w-full p-6">
         {% block content %}{% endblock %}
     </main>
 
     <!-- Footer -->
-    <footer class="bg-gray-200 text-center p-4 mt-6 shadow-inner">
-        &copy; 2025 Gestor de Citas
+    <footer class="bg-white shadow-inner border-t border-gray-200 text-center p-4 mt-6">
+        <p class="text-gray-600">&copy; 2025 Gestor de Citas</p>
     </footer>
 
     <!-- Toast global -->
@@ -113,7 +114,7 @@
         x-on:toast.window="showToast($event.detail?.message, $event.detail?.type)"
         x-show="show"
         x-transition.opacity.duration.500ms
-        class="fixed top-5 right-5 z-50 px-4 py-3 rounded shadow-lg text-white"
+        class="fixed top-5 right-5 z-50 px-4 py-3 rounded-lg shadow-lg text-white"
         :class="{
             'bg-green-600': type === 'success',
             'bg-red-600': type === 'error',

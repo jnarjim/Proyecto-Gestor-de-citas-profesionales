@@ -3,25 +3,43 @@
 {% block title %}Historial de Citas{% endblock %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto bg-white p-6 rounded shadow">
-    <h2 class="text-2xl font-bold mb-4 text-center text-gray-800">Historial de citas</h2>
+<div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4">
+    <div class="max-w-4xl mx-auto">
 
-    <table class="w-full bg-white rounded shadow">
-        <thead>
-            <tr class="bg-gray-100">
-                <th class="p-2 text-left">Fecha</th>
-                <th class="p-2 text-left">Hora</th>
-                <th class="p-2 text-left">Profesional / Cliente</th>
-                <th class="p-2 text-left">Estado</th>
-            </tr>
-        </thead>
-        <tbody id="historial-citas-list">
-            <tr>
-                <td colspan="4" class="py-4 text-center text-gray-500">Cargando historial...</td>
-            </tr>
-        </tbody>
-    </table>
+        <h2 class="text-3xl font-bold mb-8 text-center text-gray-800">Historial de Citas</h2>
+
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+            <table class="w-full table-auto">
+                <thead class="bg-gray-100">
+                    <tr>
+                        <th class="p-3 text-left font-semibold text-gray-700">Fecha</th>
+                        <th class="p-3 text-left font-semibold text-gray-700">Hora</th>
+                        <th class="p-3 text-left font-semibold text-gray-700">Profesional / Cliente</th>
+                        <th class="p-3 text-left font-semibold text-gray-700">Estado</th>
+                    </tr>
+                </thead>
+                <tbody id="historial-citas-list">
+                    <tr>
+                        <td colspan="4" class="py-4 text-center text-gray-500">Cargando historial...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Link de regreso -->
+        <div class="mt-8 text-center">
+            <a href="/mis-citas/"
+               class="inline-flex items-center text-blue-600 hover:text-blue-800 font-semibold transition">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                </svg>
+                Mis citas
+            </a>
+        </div>
+
+    </div>
 </div>
 
-<script src="{% static 'js/historial_citas.js' %}"></script>
+<script type="module" src="{% static 'js/historial_citas.js' %}"></script>
 {% endblock %}

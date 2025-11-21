@@ -1,8 +1,6 @@
-// citas_disponibles.js - Mostrar citas disponibles para clientes
 document.addEventListener("DOMContentLoaded", init);
 
 async function init() {
-    // Esperar que auth.js esté cargado
     let attempts = 0;
     while (typeof window.getProfile !== "function" && attempts < 50) {
         await new Promise(r => setTimeout(r, 100));
@@ -15,8 +13,6 @@ async function init() {
     }
 
     const perfil = await window.getProfile();
-
-    // Solo clientes pueden acceder
     if (!perfil || perfil.is_professional) {
         toast.error("Acceso no autorizado");
         setTimeout(() => window.location.href = "/login/", 1500);
@@ -57,23 +53,23 @@ async function cargarCitasDisponibles() {
             return;
         }
 
-        citas.forEach((cita) => {
+        citas.forEach(cita => {
             const card = document.createElement("div");
-            card.className =
-                "bg-white p-4 rounded shadow flex flex-col justify-between";
+            card.className = `
+                bg-white p-6 rounded-xl shadow-lg flex flex-col justify-between cursor-pointer
+                hover:bg-blue-50 transition transform hover:-translate-y-1 hover:shadow-xl
+            `;
 
             const profesionalNombre = cita.profesional
                 ? `${cita.profesional.first_name} ${cita.profesional.last_name}`.trim()
                 : "No disponible";
 
             card.innerHTML = `
-                <p><strong>Profesional:</strong> ${profesionalNombre}</p>
-                <p><strong>Fecha:</strong> ${cita.fecha}</p>
-                <p><strong>Hora:</strong> ${cita.hora}</p>
+                <p class="font-semibold text-gray-800 mb-2">Profesional: ${profesionalNombre}</p>
+                <p class="text-gray-600 mb-1">Fecha: ${cita.fecha}</p>
+                <p class="text-gray-600">Hora: ${cita.hora}</p>
             `;
 
-            // Click en card abre detalle_cita
-            card.classList.add("cursor-pointer", "hover:bg-gray-50", "transition");
             card.addEventListener("click", () => {
                 window.location.href = `/cita/${cita.id}/`;
             });

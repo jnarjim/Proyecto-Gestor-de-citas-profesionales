@@ -1,30 +1,20 @@
-// historial_citas.js - Gestión de la lista de historial de citas
 document.addEventListener("DOMContentLoaded", initHistorial);
 
-/**
- * Manejar expiración de sesión
- */
 function handleUnauthorized() {
     toast.error('Sesión expirada. Por favor, inicia sesión');
     setTimeout(() => window.location.href = '/login/', 2000);
 }
 
-/**
- * Devuelve clase Tailwind según estado
- */
 function getEstadoClass(estado) {
     const estadoClasses = {
-        'pendiente': 'text-yellow-600',
-        'confirmada': 'text-blue-600',
-        'completada': 'text-green-600',
-        'cancelada': 'text-red-600'
+        'pendiente': 'bg-yellow-100 text-yellow-800',
+        'confirmada': 'bg-blue-100 text-blue-800',
+        'completada': 'bg-green-100 text-green-800',
+        'cancelada': 'bg-red-100 text-red-800'
     };
-    return estadoClasses[estado] || 'text-gray-600';
+    return estadoClasses[estado] || 'bg-gray-100 text-gray-800';
 }
 
-/**
- * Obtener historial de citas
- */
 async function cargarHistorial() {
     const token = localStorage.getItem('access');
     if (!token) return;
@@ -45,10 +35,6 @@ async function cargarHistorial() {
 
         const citas = await res.json();
         const tbody = document.getElementById('historial-citas-list');
-        if (!tbody) {
-            console.error('No se encontró el elemento tbody #historial-citas');
-            return;
-        }
         tbody.innerHTML = '';
 
         if (citas.length === 0) {
@@ -60,17 +46,21 @@ async function cargarHistorial() {
 
         citas.forEach(cita => {
             const tr = document.createElement('tr');
-            tr.className = 'border-b';
+            tr.className = 'border-b hover:bg-gray-50 transition';
 
             const nombre = perfil.is_professional
                 ? `${cita.cliente?.first_name || ''} ${cita.cliente?.last_name || ''}`.trim()
                 : `${cita.profesional?.first_name || ''} ${cita.profesional?.last_name || ''}`.trim();
 
             tr.innerHTML = `
-                <td class="p-2">${cita.fecha}</td>
-                <td class="p-2">${cita.hora}</td>
-                <td class="p-2">${nombre || 'No disponible'}</td>
-                <td class="p-2 capitalize ${getEstadoClass(cita.estado)}">${cita.estado}</td>
+                <td class="p-3 text-gray-700">${cita.fecha}</td>
+                <td class="p-3 text-gray-700">${cita.hora}</td>
+                <td class="p-3 text-gray-700">${nombre || 'No disponible'}</td>
+                <td class="p-3">
+                    <span class="px-3 py-1 rounded-full text-sm font-semibold ${getEstadoClass(cita.estado)} capitalize">
+                        ${cita.estado}
+                    </span>
+                </td>
             `;
             tbody.appendChild(tr);
         });
@@ -83,11 +73,7 @@ async function cargarHistorial() {
     }
 }
 
-/**
- * Inicializar la página
- */
 async function initHistorial() {
-    // Esperar que auth.js esté cargado
     let attempts = 0;
     while (typeof window.getProfile !== "function" && attempts < 50) {
         await new Promise(r => setTimeout(r, 100));
@@ -106,6 +92,5 @@ async function initHistorial() {
         return;
     }
 
-    // Cargar historial
     cargarHistorial();
 }

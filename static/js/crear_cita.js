@@ -1,4 +1,4 @@
-// crear_cita.js - Crear nuevas citas
+// crear_cita.js - Crear nuevas citas con estilo uniforme
 document.addEventListener("DOMContentLoaded", init);
 
 async function init() {
@@ -10,7 +10,6 @@ async function init() {
     }
 
     if (typeof window.getProfile !== "function") {
-        console.error('auth.js no cargó correctamente');
         toast.error('Error al cargar dependencias');
         return;
     }
@@ -23,8 +22,10 @@ async function init() {
     }
 
     if (!perfil.is_professional) {
-        document.getElementById("crear-cita-form").innerHTML =
-            "<p class='text-red-500 text-center'>Solo los profesionales pueden crear citas.</p>";
+        document.getElementById("crear-cita-container").innerHTML =
+            `<div class="text-center text-red-500 font-semibold py-8">
+                Solo los profesionales pueden crear citas.
+            </div>`;
         return;
     }
 
@@ -35,17 +36,17 @@ function setupForm() {
     const fechaInput = document.getElementById("fecha");
     const horaSelect = document.getElementById("hora");
     const mensajeDiv = document.getElementById("mensaje-cita");
+    const btn = document.getElementById("crear-btn");
 
     // Fecha mínima = hoy
     const hoy = new Date().toISOString().split("T")[0];
     fechaInput.setAttribute("min", hoy);
 
-    // Al cambiar la fecha, actualizar horas disponibles
     fechaInput.addEventListener("change", async () => {
         const fecha = fechaInput.value;
         if (!fecha) return;
 
-        horaSelect.innerHTML = "<option>Cargando horas...</option>";
+        horaSelect.innerHTML = `<option disabled>🔄 Cargando horas...</option>`;
 
         try {
             const token = localStorage.getItem("access");
@@ -60,7 +61,6 @@ function setupForm() {
             }
 
             const citas = res.ok ? await res.json() : [];
-
             let horarios = generarHorarios();
             const ocupadas = citas.map(c => c.hora);
             horarios = horarios.filter(h => !ocupadas.includes(h));
@@ -76,7 +76,7 @@ function setupForm() {
             }
 
             if (horarios.length === 0) {
-                horaSelect.innerHTML = "<option disabled>No quedan horas disponibles</option>";
+                horaSelect.innerHTML = `<option disabled>No quedan horas disponibles</option>`;
                 return;
             }
 
@@ -85,9 +85,10 @@ function setupForm() {
                 horaSelect.innerHTML += `<option value="${h}">${h}</option>`;
             });
 
+            mensajeDiv.innerHTML = ""; // Limpiar mensaje
         } catch (err) {
             console.error("Error cargando horas:", err);
-            toast.error("No se pudieron cargar los horarios disponibles");
+            mensajeDiv.innerHTML = `<span class="text-red-500 font-semibold">❌ No se pudieron cargar los horarios</span>`;
             horaSelect.innerHTML = "<option disabled>Error al cargar horas</option>";
         }
     });
@@ -96,19 +97,17 @@ function setupForm() {
     const form = document.getElementById("crear-cita-form");
     form.addEventListener("submit", async e => {
         e.preventDefault();
-
         const fecha = fechaInput.value;
         const hora = horaSelect.value;
         const token = localStorage.getItem("access");
 
         if (!fecha || !hora) {
-            toast.error("Selecciona fecha y hora");
+            mensajeDiv.innerHTML = `<span class="text-red-500 font-semibold">Selecciona fecha y hora</span>`;
             return;
         }
 
-        const btn = document.getElementById("crear-btn");
         btn.disabled = true;
-        btn.innerText = "Creando...";
+        btn.innerHTML = `<span class="animate-pulse">Creando…</span>`;
 
         try {
             const res = await fetch("/api/citas/crear/", {
@@ -123,22 +122,24 @@ function setupForm() {
             const data = await res.json();
 
             if (res.ok) {
-                toast.success("Cita creada correctamente");
+                toast.success("✅ Cita creada correctamente");
+                btn.innerHTML = "Creada ✔";
                 setTimeout(() => window.location.href = "/mis-citas/", 1200);
             } else {
-                toast.error(data.detail || "Error al crear cita");
+                mensajeDiv.innerHTML = `<span class="text-red-500 font-semibold">❌ ${data.detail || "Error al crear cita"}</span>`;
+                btn.innerHTML = "Crear Cita";
             }
         } catch (err) {
             console.error("Error creando cita:", err);
-            toast.error("Error de conexión al crear la cita");
+            mensajeDiv.innerHTML = `<span class="text-red-500 font-semibold">Error de conexión</span>`;
+            btn.innerHTML = "Crear Cita";
         } finally {
             btn.disabled = false;
-            btn.innerText = "Crear Cita";
         }
     });
 }
 
-// Generar horarios disponibles de 09:00 a 18:00 cada 30 min
+// Generar horarios de 09:00 a 18:00 cada 30 min
 function generarHorarios() {
     const horas = [];
     let h = 9;
