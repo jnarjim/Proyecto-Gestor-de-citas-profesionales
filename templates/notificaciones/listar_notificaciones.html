@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Notificaciones{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto bg-white p-6 rounded-lg shadow">
+    <h2 class="text-2xl font-bold mb-4">Notificaciones</h2>
+
+    <div id="lista-notificaciones">
+        <p class="text-gray-500 text-center">Cargando notificaciones...</p>
+    </div>
+</div>
+
+<script src="{% static 'js/notificaciones_lista.js' %}"></script>
+{% endblock %}

@@ -32,6 +32,7 @@ urlpatterns = [
     path('citas-disponibles/', citas_views.citas_disponibles, name='citas_disponibles'),
     path('citas/historial/', lambda request: render(request, 'citas/historial_citas.html'), name='historial_citas'),
     path('panel-profesional/', lambda request: render(request, 'profesional/panel_profesional.html'), name='panel_profesional'),
+    path('notificaciones/', lambda request: render(request, 'notificaciones/listar_notificaciones.html'), name='listar_notificaciones'),
 
     # APIs
     path('api/usuarios/', include('usuarios.urls')),
