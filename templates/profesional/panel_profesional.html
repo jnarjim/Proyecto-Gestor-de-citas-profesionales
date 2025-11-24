@@ -5,20 +5,189 @@
 {% block content %}
 <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet' />
 <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'></script>
+<script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/locales/es.js'></script>
 
+<style>
+    /* Mejoras de estilo para FullCalendar */
+    #calendario {
+        border-radius: 1rem;
+        overflow: hidden;
+    }
 
-<div class="max-w-5xl mx-auto p-6 bg-white rounded shadow">
-    <h2 class="text-2xl font-bold mb-4">Panel del Profesional</h2>
+    .fc {
+        background: white;
+    }
 
-    <!-- Contadores -->
-    <div class="grid grid-cols-3 gap-4 mb-6">
-        <div class="p-4 bg-blue-100 rounded text-center">Citas hoy: <span id="count-citas-hoy">0</span></div>
-        <div class="p-4 bg-yellow-100 rounded text-center">Pendientes: <span id="count-pendientes">0</span></div>
-        <div class="p-4 bg-green-100 rounded text-center">Completadas: <span id="count-completadas">0</span></div>
+    .fc-header-toolbar {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 1.5rem !important;
+        border-radius: 1rem 1rem 0 0;
+    }
+
+    .fc-header-toolbar .fc-button {
+        background: rgba(255, 255, 255, 0.2) !important;
+        border: 2px solid rgba(255, 255, 255, 0.3) !important;
+        color: white !important;
+        font-weight: 600;
+        text-transform: capitalize;
+        transition: all 0.3s;
+    }
+
+    .fc-header-toolbar .fc-button:hover {
+        background: rgba(255, 255, 255, 0.3) !important;
+        transform: translateY(-2px);
+    }
+
+    .fc-header-toolbar .fc-button-active {
+        background: rgba(255, 255, 255, 0.4) !important;
+    }
+
+    .fc-toolbar-title {
+        color: white !important;
+        font-size: 1.5rem !important;
+        font-weight: bold;
+    }
+
+    .fc-col-header-cell {
+        background: #f7fafc;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.05em;
+        padding: 1rem 0;
+    }
+
+    .fc-daygrid-day:hover,
+    .fc-timegrid-col:hover {
+        background: #f0f4ff;
+    }
+
+    .fc-event {
+        border-radius: 0.375rem;
+        padding: 0.25rem 0.5rem;
+        border: none !important;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        transition: all 0.2s;
+    }
+
+    .fc-event:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .fc-daygrid-day-number {
+        padding: 0.5rem;
+        font-weight: 600;
+    }
+
+    .fc-day-today {
+        background: #eef2ff !important;
+    }
+</style>
+
+<div class="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-100 py-12 px-4">
+    <div class="max-w-7xl mx-auto">
+
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <div class="inline-flex items-center justify-center w-16 h-16 bg-purple-100 rounded-full mb-4">
+                <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                </svg>
+            </div>
+            <h1 class="text-4xl font-bold text-gray-800 mb-2">Panel Profesional</h1>
+            <p class="text-gray-600">Vista completa de tu agenda y estadísticas</p>
+        </div>
+
+        <!-- Contadores (KPIs) -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white rounded-2xl shadow-lg p-6 border-l-4 border-blue-500 transform hover:-translate-y-1 transition">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600 mb-1">Citas Hoy</p>
+                        <p class="text-4xl font-bold text-gray-800" id="count-citas-hoy">0</p>
+                    </div>
+                    <div class="bg-blue-100 rounded-full p-4">
+                        <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-lg p-6 border-l-4 border-yellow-500 transform hover:-translate-y-1 transition">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600 mb-1">Pendientes</p>
+                        <p class="text-4xl font-bold text-gray-800" id="count-pendientes">0</p>
+                    </div>
+                    <div class="bg-yellow-100 rounded-full p-4">
+                        <svg class="w-8 h-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-lg p-6 border-l-4 border-green-500 transform hover:-translate-y-1 transition">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600 mb-1">Completadas</p>
+                        <p class="text-4xl font-bold text-gray-800" id="count-completadas">0</p>
+                    </div>
+                    <div class="bg-green-100 rounded-full p-4">
+                        <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Calendario -->
+        <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
+            <div id="calendario"></div>
+        </div>
+
+        <!-- Leyenda de colores -->
+        <div class="mt-6 bg-white rounded-xl shadow-md p-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                <svg class="w-5 h-5 mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path>
+                </svg>
+                Leyenda de Estados
+            </h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="flex items-center">
+                    <div class="w-4 h-4 rounded-full bg-yellow-500 mr-3"></div>
+                    <span class="text-sm text-gray-700 font-medium">Pendiente</span>
+                </div>
+                <div class="flex items-center">
+                    <div class="w-4 h-4 rounded-full bg-blue-500 mr-3"></div>
+                    <span class="text-sm text-gray-700 font-medium">Confirmada</span>
+                </div>
+                <div class="flex items-center">
+                    <div class="w-4 h-4 rounded-full bg-green-500 mr-3"></div>
+                    <span class="text-sm text-gray-700 font-medium">Completada</span>
+                </div>
+                <div class="flex items-center">
+                    <div class="w-4 h-4 rounded-full bg-red-500 mr-3"></div>
+                    <span class="text-sm text-gray-700 font-medium">Cancelada</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Link de regreso -->
+        <div class="text-center mt-6">
+            <a href="/"
+               class="text-purple-600 hover:text-purple-700 font-medium inline-flex items-center">
+                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+                Volver al inicio
+            </a>
+        </div>
     </div>
-
-    <!-- Calendario -->
-    <div id="calendario"></div>
 </div>
 
 <script src="{% static 'js/panel_profesional.js' %}"></script>

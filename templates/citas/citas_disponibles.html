@@ -3,27 +3,40 @@
 {% block title %}Citas Disponibles{% endblock %}
 
 {% block content %}
-<div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4">
-    <div class="max-w-5xl mx-auto">
+<div class="min-h-screen bg-gradient-to-br from-purple-50 to-pink-100 py-12 px-4">
+    <div class="max-w-6xl mx-auto">
 
-        <h2 class="text-3xl font-bold mb-8 text-center text-gray-800">Citas Disponibles</h2>
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <div class="inline-flex items-center justify-center w-16 h-16 bg-purple-100 rounded-full mb-4">
+                <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+            </div>
+            <h1 class="text-4xl font-bold text-gray-800 mb-2">Citas Disponibles</h1>
+            <p class="text-gray-600">Encuentra y reserva tu próxima cita con profesionales</p>
+        </div>
 
         <!-- Contenedor de cards -->
-        <div id="citas-disponibles" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <p id="loading-citas" class="col-span-full text-center text-gray-500">
-                Cargando citas...
-            </p>
+        <div id="citas-disponibles" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Loading state -->
+            <div class="col-span-full flex flex-col items-center justify-center py-12">
+                <svg class="animate-spin h-12 w-12 text-purple-600 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <p class="text-gray-600 text-lg">Cargando citas disponibles...</p>
+            </div>
         </div>
 
         <!-- Link de regreso -->
-        <div class="mt-8 text-center">
-            <a href="/mis-citas/"
-               class="inline-flex items-center text-blue-600 hover:text-blue-800 font-semibold transition">
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+        <div class="text-center mt-8">
+            <a href="/"
+               class="text-purple-600 hover:text-purple-700 font-medium inline-flex items-center">
+                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                 </svg>
-                Mis citas
+                Volver al inicio
             </a>
         </div>
 
@@ -31,15 +44,19 @@
 </div>
 
 <!-- Modal global de confirmación -->
-<div id="modal-confirm" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-  <div class="bg-white rounded-xl p-6 w-96 shadow-2xl">
-      <h2 id="modal-title" class="text-xl font-bold mb-3"></h2>
-      <p id="modal-message" class="text-gray-600 mb-6"></p>
-      <div class="flex justify-end space-x-3">
-          <button id="modal-cancel" class="px-5 py-2 bg-gray-300 rounded-lg hover:bg-gray-400 transition">Cancelar</button>
-          <button id="modal-accept" class="px-5 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition">Aceptar</button>
-      </div>
-  </div>
+<div id="modal-confirm" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl">
+        <h2 id="modal-title" class="text-xl font-bold mb-3 text-gray-800"></h2>
+        <p id="modal-message" class="text-gray-600 mb-6"></p>
+        <div class="flex flex-col sm:flex-row justify-end gap-3">
+            <button id="modal-cancel" class="px-5 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition font-medium">
+                Cancelar
+            </button>
+            <button id="modal-accept" class="px-5 py-2 text-white bg-purple-600 rounded-lg hover:bg-purple-700 transition font-medium">
+                Aceptar
+            </button>
+        </div>
+    </div>
 </div>
 
 <script type="module" src="{% static 'js/citas_disponibles.js' %}"></script>
