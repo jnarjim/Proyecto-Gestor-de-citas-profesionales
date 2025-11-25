@@ -4,11 +4,6 @@
 // SISTEMA DE TOAST (Notificaciones visuales)
 // ============================================
 
-/**
- * Muestra una notificación toast
- * @param {string} message - Mensaje a mostrar
- * @param {string} type - Tipo de notificación: 'success', 'error', 'info', 'warning'
- */
 function showToast(message, type = 'success') {
     if (!message) {
         console.error('showToast: No se proporcionó un mensaje');
@@ -21,9 +16,6 @@ function showToast(message, type = 'success') {
     window.dispatchEvent(event);
 }
 
-/**
- * Atajos para diferentes tipos de notificaciones toast
- */
 const toast = {
     success: (message) => showToast(message, 'success'),
     error: (message) => showToast(message, 'error'),
@@ -31,7 +23,6 @@ const toast = {
     warning: (message) => showToast(message, 'warning')
 };
 
-// Hacer disponible globalmente
 window.showToast = showToast;
 window.toast = toast;
 
@@ -64,13 +55,41 @@ async function markAsRead(notifId) {
             headers: { 'Authorization': 'Bearer ' + token }
         });
         if (response.ok) {
-            toast.success('Notificación marcada como leída');
             return true;
         }
     } catch (error) {
         console.error(error);
-        toast.error('Error al marcar como leída');
         return false;
+    }
+}
+
+// Eliminar notificación
+async function deleteNotification(notifId) {
+    const token = localStorage.getItem('access');
+    try {
+        const response = await fetch(`/api/notificaciones/${notifId}/eliminar/`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (response.status === 401) {
+            const refreshed = await window.refreshToken?.();
+            if (refreshed) {
+                return deleteNotification(notifId);
+            }
+            throw new Error('Sesión expirada');
+        }
+
+        if (response.ok || response.status === 204) {
+            return true;
+        }
+        throw new Error('Error al eliminar notificación');
+    } catch (error) {
+        console.error(error);
+        throw error;
     }
 }
 
@@ -83,9 +102,8 @@ async function checkNotifications() {
 
     try {
         const notifications = await getNotifications();
-        const unreadCount = notifications.filter(n => !n.leida).length;
+        const unreadCount = notifications.length; // Ahora contamos todas las notificaciones
 
-        // Actualizar contador en el menú si existe
         const badge = document.getElementById('notification-badge');
         if (badge) {
             if (unreadCount > 0) {
@@ -102,16 +120,14 @@ async function checkNotifications() {
 
 // Inicializar verificación de notificaciones
 document.addEventListener('DOMContentLoaded', () => {
-    // Verificación inicial
     checkNotifications();
-
-    // Verificación periódica cada 30 segundos
     setInterval(checkNotifications, 30000);
 });
 
 // Exportar funciones globalmente
 window.getNotifications = getNotifications;
 window.markAsRead = markAsRead;
+window.deleteNotification = deleteNotification;
 window.checkNotifications = checkNotifications;
 
 console.log('✅ Sistema de notificaciones y toast cargado correctamente');

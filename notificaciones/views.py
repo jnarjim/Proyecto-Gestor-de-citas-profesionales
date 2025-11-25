@@ -28,3 +28,11 @@ class MarcarNotificacionLeidaView(APIView):
         notificacion.leido = True
         notificacion.save()
         return Response({"detail": "Notificación marcada como leída."})
+
+class EliminarNotificacionView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def delete(self, request, pk):
+        notificacion = get_object_or_404(Notificacion, id=pk, receptor=request.user)
+        notificacion.delete()
+        return Response({"detail": "Notificación eliminada correctamente."}, status=204)

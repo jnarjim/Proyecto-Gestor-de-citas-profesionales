@@ -143,8 +143,13 @@ function actualizarContadores() {
 // Función global para ir a la notificación (marca como leída y elimina)
 window.irANotificacion = async function(destino, notifId) {
     try {
-        // Marcar como leída y eliminar del servidor
+        // Marcar como leída en el servidor
         await window.markAsRead(notifId);
+
+        // Intentar eliminar del servidor si existe el método
+        if (typeof window.deleteNotification === 'function') {
+            await window.deleteNotification(notifId);
+        }
 
         // Redirigir
         window.location.href = destino;
@@ -160,8 +165,13 @@ window.eliminarNotificacion = async function(event, notifId) {
     event.stopPropagation();
 
     try {
-        // Marcar como leída (esto la elimina del servidor)
+        // Primero marcar como leída
         await window.markAsRead(notifId);
+
+        // Intentar eliminar del servidor si existe el método
+        if (typeof window.deleteNotification === 'function') {
+            await window.deleteNotification(notifId);
+        }
 
         // Eliminar del array local con animación
         const notifElement = document.querySelector(`[data-notif-id="${notifId}"]`);
@@ -212,6 +222,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         // Eliminar todas del servidor
                         for (const notif of notificacionesData) {
                             await window.markAsRead(notif.id);
+                            // Intentar eliminar si existe el método
+                            if (typeof window.deleteNotification === 'function') {
+                                await window.deleteNotification(notif.id);
+                            }
                         }
 
                         // Limpiar array local
