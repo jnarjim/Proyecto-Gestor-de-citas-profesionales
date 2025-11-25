@@ -9,6 +9,12 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 
+    <script>
+      // Comprobar si hay token JWT en localStorage
+      window.isAuthenticated = !!localStorage.getItem('access');
+      console.log("window.isAuthenticated:", window.isAuthenticated);
+    </script>
+
     <!-- JS globales -->
     <script src="{% static 'js/auth.js' %}" defer></script>
     <script src="{% static 'js/notifications.js' %}" defer></script>

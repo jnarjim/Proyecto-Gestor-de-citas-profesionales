@@ -33,6 +33,8 @@ window.toast = toast;
 // Obtener notificaciones del usuario
 async function getNotifications() {
     const token = localStorage.getItem('access');
+    if (!token) return [];  // ← no hay usuario logueado
+
     try {
         const response = await fetch('/api/notificaciones/', {
             headers: { 'Authorization': 'Bearer ' + token }
@@ -49,14 +51,14 @@ async function getNotifications() {
 // Marcar notificación como leída
 async function markAsRead(notifId) {
     const token = localStorage.getItem('access');
+    if (!token) return false;
+
     try {
         const response = await fetch(`/api/notificaciones/${notifId}/marcar-leida/`, {
             method: 'POST',
             headers: { 'Authorization': 'Bearer ' + token }
         });
-        if (response.ok) {
-            return true;
-        }
+        return response.ok;
     } catch (error) {
         console.error(error);
         return false;
@@ -66,6 +68,8 @@ async function markAsRead(notifId) {
 // Eliminar notificación
 async function deleteNotification(notifId) {
     const token = localStorage.getItem('access');
+    if (!token) return false;
+
     try {
         const response = await fetch(`/api/notificaciones/${notifId}/eliminar/`, {
             method: 'DELETE',
@@ -77,9 +81,7 @@ async function deleteNotification(notifId) {
 
         if (response.status === 401) {
             const refreshed = await window.refreshToken?.();
-            if (refreshed) {
-                return deleteNotification(notifId);
-            }
+            if (refreshed) return deleteNotification(notifId);
             throw new Error('Sesión expirada');
         }
 
@@ -89,20 +91,21 @@ async function deleteNotification(notifId) {
         throw new Error('Error al eliminar notificación');
     } catch (error) {
         console.error(error);
-        throw error;
+        return false;
     }
 }
 
-/**
- * Verificar notificaciones no leídas y actualizar badge
- */
+// ============================================
+// Verificar notificaciones y actualizar badge
+// ============================================
+
 async function checkNotifications() {
     const token = localStorage.getItem('access');
-    if (!token) return;
+    if (!token) return;  // ← no hacemos nada si no hay token
 
     try {
         const notifications = await getNotifications();
-        const unreadCount = notifications.length; // Ahora contamos todas las notificaciones
+        const unreadCount = notifications.length;
 
         const badge = document.getElementById('notification-badge');
         if (badge) {
@@ -118,10 +121,12 @@ async function checkNotifications() {
     }
 }
 
-// Inicializar verificación de notificaciones
+// Inicializar verificación automática
 document.addEventListener('DOMContentLoaded', () => {
-    checkNotifications();
-    setInterval(checkNotifications, 30000);
+    if (localStorage.getItem('access')) {  // ← chequeo de autenticación
+        checkNotifications();
+        setInterval(checkNotifications, 30000);
+    }
 });
 
 // Exportar funciones globalmente
