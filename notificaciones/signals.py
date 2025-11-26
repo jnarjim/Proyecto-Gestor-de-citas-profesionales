@@ -8,10 +8,22 @@ def gestionar_notificaciones_cita(sender, instance, created, **kwargs):
 
     cita = instance
 
+    # Cuando se crea, nunca notificar
     if created:
-        return  # cuando el profesional crea disponibilidad, no notificar
+        return
 
-    # Cliente reserva la cita → PROFESIONAL recibe notificación
+    # Obtener estado anterior desde BD
+    try:
+        old_instance = Cita.objects.get(pk=cita.pk)
+        old_estado = old_instance.estado
+    except Cita.DoesNotExist:
+        old_estado = None
+
+    # Si el estado no cambió → evitar duplicados
+    if old_estado == cita.estado:
+        return
+
+    # RESERVA → notificación para PRO
     if cita.estado == "confirmada":
         Notificacion.objects.create(
             receptor=cita.profesional,
@@ -22,7 +34,7 @@ def gestionar_notificaciones_cita(sender, instance, created, **kwargs):
         )
         return
 
-    # Se cancela → cliente recibe notificación
+    # CANCELACIÓN → notificación para CLIENTE
     if cita.estado == "cancelada":
         Notificacion.objects.create(
             receptor=cita.cliente,
@@ -33,7 +45,7 @@ def gestionar_notificaciones_cita(sender, instance, created, **kwargs):
         )
         return
 
-    # Se completa
+    # COMPLETADA → notificación para CLIENTE
     if cita.estado == "completada":
         Notificacion.objects.create(
             receptor=cita.cliente,
