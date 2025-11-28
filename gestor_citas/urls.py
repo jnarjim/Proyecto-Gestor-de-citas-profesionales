@@ -20,8 +20,6 @@ from django.urls import path, include
 from citas import views as citas_views
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-
     # Frontend
     path('', citas_views.index, name='index'),
     path('mis-citas/', lambda request: render(request, 'citas/listar_citas.html'), name='listar_citas'),
@@ -38,4 +36,8 @@ urlpatterns = [
     path('api/usuarios/', include('usuarios.urls')),
     path('api/citas/', include('citas.urls')),
     path('api/notificaciones/', include('notificaciones.urls')),
+
+    # Admin
+    path('admin/', admin.site.urls),
+    path('usuarios/admin/dashboard/', lambda request: render(request, 'usuarios/admin_dashboard.html'), name='admin_dashboard'),
 ]

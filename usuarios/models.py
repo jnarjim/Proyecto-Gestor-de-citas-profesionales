@@ -25,3 +25,16 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return f"{self.email} - {self.first_name} {self.last_name}"
+
+class SolicitudProfesional(models.Model):
+    usuario = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="solicitudes_profesional")
+    acepta_reapertura_citas = models.BooleanField(default=False)
+    estado = models.CharField(
+        max_length=20,
+        choices=[('pendiente', 'Pendiente'), ('aprobada', 'Aprobada'), ('rechazada', 'Rechazada')],
+        default='pendiente'
+    )
+    creada_en = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Solicitud {self.usuario.email} - {self.estado}"

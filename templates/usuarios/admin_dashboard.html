@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Panel de Admin</h1>
+
+<div id="solicitudes" x-data="adminSolicitudes()">
+    <h2>Solicitudes de Profesionales Pendientes</h2>
+    <ul>
+        <template x-for="solicitud in solicitudes" :key="solicitud.id">
+            <li>
+                <span x-text="solicitud.usuario.email"></span>
+                <span x-text="solicitud.estado"></span>
+                <button @click="aprobar(solicitud.id)">Aprobar</button>
+                <button @click="rechazar(solicitud.id)">Rechazar</button>
+            </li>
+        </template>
+    </ul>
+</div>
+
+<script src="{% static 'usuarios/js/admin_dashboard.js' %}"></script>
+{% endblock %}
