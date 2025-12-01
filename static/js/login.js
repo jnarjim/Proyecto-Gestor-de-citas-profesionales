@@ -36,6 +36,20 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
 
                 toast.success("Login exitoso");
+
+                // Evaluar tipo de usuario
+                const payload = JSON.parse(atob(result.access.split(".")[1]));
+
+                if (payload.is_staff || payload.is_superuser) {
+                    setTimeout(() => (window.location.href = "/usuarios/admin/dashboard/"), 1200);
+                    return;
+                }
+
+                if (payload.is_professional) {
+                    setTimeout(() => (window.location.href = "/panel-profesional/"), 1200);
+                    return;
+                }
+
                 setTimeout(() => (window.location.href = "/"), 1200);
             } else {
                 toast.error(result.detail || "Error en login");

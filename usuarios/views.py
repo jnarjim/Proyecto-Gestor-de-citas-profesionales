@@ -9,8 +9,8 @@ from .serializers import RegisterSerializer, UserSerializer, SolicitudProfesiona
 from rest_framework_simplejwt.views import TokenObtainPairView
 from .token_serializers import MyTokenObtainPairSerializer
 from .models import SolicitudProfesional
-from django.shortcuts import render
-from django.contrib.auth.decorators import user_passes_test
+from django.views.generic import TemplateView
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 
 class RegisterView(generics.CreateAPIView):
     serializer_class = RegisterSerializer
@@ -82,6 +82,8 @@ class GestionSolicitudProfesionalAdminView(generics.UpdateAPIView):
         return self.partial_update(request, *args, **kwargs)
 
 
-@user_passes_test(lambda u: u.is_staff)
-def AdminDashboardView(request):
-    return render(request, 'usuarios/admin_dashboard.html')
+class AdminDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
+    template_name = 'usuarios/admin.html'
+
+    def test_func(self):
+        return self.request.user.is_staff  # Solo admins pueden entrar

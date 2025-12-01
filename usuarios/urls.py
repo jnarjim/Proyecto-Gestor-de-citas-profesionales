@@ -27,5 +27,5 @@ urlpatterns = [
     path('solicitud-profesional/gestionar/<int:pk>/', GestionSolicitudProfesionalAdminView.as_view(), name='gestionar_solicitud_profesional'),
 
     # Panel de admin
-    path('admin/dashboard/', AdminDashboardView, name='admin_dashboard'),
+    path('admin/dashboard/', AdminDashboardView.as_view(), name='admin_dashboard'),
 ]
