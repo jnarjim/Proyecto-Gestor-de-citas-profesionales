@@ -62,6 +62,7 @@ class SolicitudProfesionalSerializer(serializers.ModelSerializer):
 
 
 class SolicitudProfesionalAdminSerializer(serializers.ModelSerializer):
+    usuario = UserSerializer(read_only=True)
 
     class Meta:
         model = SolicitudProfesional
