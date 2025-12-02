@@ -53,8 +53,12 @@ class SolicitudProfesionalSerializer(serializers.ModelSerializer):
         return data
 
     def create(self, validated_data):
-        usuario = self.context['request'].user
-        return SolicitudProfesional.objects.create(usuario=usuario, **validated_data)
+        # Aseguramos que 'usuario' nunca venga en validated_data
+        validated_data.pop('usuario', None)
+        return SolicitudProfesional.objects.create(
+            usuario=self.context['request'].user,
+            **validated_data
+        )
 
 
 class SolicitudProfesionalAdminSerializer(serializers.ModelSerializer):

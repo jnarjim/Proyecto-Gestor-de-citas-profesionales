@@ -31,6 +31,8 @@ urlpatterns = [
     path('citas/historial/', lambda request: render(request, 'citas/historial_citas.html'), name='historial_citas'),
     path('panel-profesional/', lambda request: render(request, 'profesional/panel_profesional.html'), name='panel_profesional'),
     path('notificaciones/', lambda request: render(request, 'notificaciones/listar_notificaciones.html'), name='listar_notificaciones'),
+    path('usuarios/solicitud-profesional/crear/', lambda request: render(request, 'usuarios/solicitud_profesional.html'), name='solicitud_profesional_crear'),
+    path('usuarios/solicitud-profesional/mia/', lambda request: render(request, 'usuarios/solicitud_profesional.html'), name='solicitud_profesional_mia'),
 
     # APIs
     path('api/usuarios/', include('usuarios.urls')),

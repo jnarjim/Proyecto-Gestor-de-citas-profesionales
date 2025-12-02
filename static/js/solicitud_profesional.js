@@ -11,9 +11,9 @@ function solicitudProfesional() {
 
         async cargarSolicitud() {
             try {
-                const res = await fetch('/api/usuarios/mi_solicitud/', {
+                const res = await fetch('/api/usuarios/solicitud-profesional/mia/', {
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+                        'Authorization': `Bearer ${localStorage.getItem('access')}`
                     }
                 });
 
@@ -36,11 +36,11 @@ function solicitudProfesional() {
             this.error = '';
 
             try {
-                const res = await fetch('/api/usuarios/crear_solicitud/', {
+                const res = await fetch('/api/usuarios/solicitud-profesional/crear/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+                        'Authorization': `Bearer ${localStorage.getItem('access')}`
                     },
                     body: JSON.stringify({
                         acepta_reapertura_citas: this.aceptaReapertura
@@ -50,7 +50,6 @@ function solicitudProfesional() {
                 const data = await res.json();
 
                 if (!res.ok) {
-                    // Mostrar primer error si viene en objeto
                     if (typeof data === 'object') {
                         this.error = data.detail || Object.values(data)[0];
                     } else {
