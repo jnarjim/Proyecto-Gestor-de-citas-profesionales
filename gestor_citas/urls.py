@@ -33,6 +33,7 @@ urlpatterns = [
     path('notificaciones/', lambda request: render(request, 'notificaciones/listar_notificaciones.html'), name='listar_notificaciones'),
     path('usuarios/solicitud-profesional/crear/', lambda request: render(request, 'usuarios/solicitud_profesional.html'), name='solicitud_profesional_crear'),
     path('usuarios/solicitud-profesional/mia/', lambda request: render(request, 'usuarios/solicitud_profesional.html'), name='solicitud_profesional_mia'),
+    path('perfil/', lambda request: render(request, 'usuarios/perfil.html'), name='perfil'),
 
     # APIs
     path('api/usuarios/', include('usuarios.urls')),

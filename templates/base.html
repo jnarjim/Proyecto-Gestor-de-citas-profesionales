@@ -135,6 +135,15 @@
                             </div>
                         </template>
 
+                        <template x-if="loggedIn">
+                            <a href="/perfil/" class="bg-white bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-lg text-white font-semibold transition shadow-md hover:shadow-lg inline-flex items-center">
+                                <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A7 7 0 1118.879 6.196 7 7 0 015.121 17.804z"></path>
+                                </svg>
+                                Perfil
+                            </a>
+                        </template>
+
                         <!-- Usuario logueado -->
                         <template x-if="loggedIn">
                             <div class="flex items-center ml-4 space-x-3">
