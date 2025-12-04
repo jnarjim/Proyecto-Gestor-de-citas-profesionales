@@ -1,4 +1,5 @@
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework import serializers
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod
@@ -15,9 +16,11 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
         return token
 
     def validate(self, attrs):
-        data = super().validate(attrs)
+        try:
+            data = super().validate(attrs)
+        except Exception:
+            raise serializers.ValidationError("Credenciales incorrectas.")
 
-        # Información que llega al frontend en la respuesta JSON
         data['user'] = {
             'email': self.user.email,
             'first_name': self.user.first_name,

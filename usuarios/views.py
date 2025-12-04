@@ -4,30 +4,61 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.views import APIView
 from rest_framework.exceptions import PermissionDenied
+from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework.permissions import AllowAny
 
 from .serializers import RegisterSerializer, UserSerializer, SolicitudProfesionalSerializer, SolicitudProfesionalAdminSerializer
-from rest_framework_simplejwt.views import TokenObtainPairView
 from .token_serializers import MyTokenObtainPairSerializer
 from .models import SolicitudProfesional
 from django.views.generic import TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 
 class RegisterView(generics.CreateAPIView):
+    """Vista para registro de nuevos usuarios"""
     serializer_class = RegisterSerializer
+    permission_classes = [AllowAny]
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
 
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
+        if not serializer.is_valid():
+            # Formatear errores de forma más amigable
+            errors = serializer.errors
 
-        return Response(
-            {"message": "Usuario creado correctamente"},
-            status=status.HTTP_201_CREATED
-        )
+            # Si hay error de email duplicado
+            if 'email' in errors:
+                return Response({
+                    'email': 'Este correo ya está registrado.',
+                    'message': 'Ya existe una cuenta con este email.'
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            return Response(errors, status=status.HTTP_400_BAD_REQUEST)
+
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+
+        return Response({
+            'message': 'Usuario registrado correctamente. Ya puedes iniciar sesión.',
+            'user': serializer.data
+        }, status=status.HTTP_201_CREATED, headers=headers)
 
 class LoginView(TokenObtainPairView):
+    """Vista personalizada para login con mejor manejo de errores"""
     serializer_class = MyTokenObtainPairSerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+
+        try:
+            serializer.is_valid(raise_exception=True)
+        except Exception as e:
+            # Error de credenciales incorrectas
+            return Response({
+                'detail': 'Email o contraseña incorrectos.',
+                'message': 'Por favor, verifica tus credenciales.'
+            }, status=status.HTTP_401_UNAUTHORIZED)
+
+        return Response(serializer.validated_data, status=status.HTTP_200_OK)
 
 class ProfileView(APIView):
     permission_classes = [IsAuthenticated]

@@ -2,22 +2,44 @@ from rest_framework import serializers
 from .models import CustomUser, SolicitudProfesional
 
 class RegisterSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True)
+    password = serializers.CharField(
+        write_only=True,
+        min_length=6,
+        error_messages={
+            "min_length": "La contraseña debe tener al menos 6 caracteres."
+        }
+    )
 
     class Meta:
         model = CustomUser
         fields = ['email', 'first_name', 'last_name', 'phone', 'bio', 'password']
 
+    # Validación específica para email
+    def validate_email(self, value):
+        if CustomUser.objects.filter(email=value).exists():
+            raise serializers.ValidationError("Este correo ya está registrado.")
+        return value
+
+    # Validación general
+    def validate(self, data):
+        if not data.get("first_name") or data["first_name"].strip() == "":
+            raise serializers.ValidationError({"first_name": "El nombre no puede estar vacío."})
+
+        if not data.get("last_name") or data["last_name"].strip() == "":
+            raise serializers.ValidationError({"last_name": "Los apellidos no pueden estar vacíos."})
+
+        return data
+
+    # Crear usuario
     def create(self, validated_data):
-        user = CustomUser.objects.create_user(
+        return CustomUser.objects.create_user(
             email=validated_data['email'],
-            first_name=validated_data.get('first_name', ''),
-            last_name=validated_data.get('last_name', ''),
+            first_name=validated_data.get('first_name', '').strip(),
+            last_name=validated_data.get('last_name', '').strip(),
             phone=validated_data.get('phone', ''),
             bio=validated_data.get('bio', ''),
             password=validated_data['password']
         )
-        return user
 
 
 class UserSerializer(serializers.ModelSerializer):
