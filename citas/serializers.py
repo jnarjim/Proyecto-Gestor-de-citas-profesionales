@@ -34,3 +34,8 @@ class CrearCitaSerializer(serializers.ModelSerializer):
         model = Cita
         fields = ['fecha', 'hora', 'duracion']
         # No pedimos 'profesional', se asignará automáticamente
+
+class EditarCitaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Cita
+        fields = ['fecha', 'hora', 'duracion']

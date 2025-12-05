@@ -8,7 +8,7 @@ from django.db.models import Q
 from django.utils.dateparse import parse_date
 from notificaciones.models import Notificacion
 from .models import Cita
-from .serializers import CitaSerializer, CrearCitaSerializer
+from .serializers import CitaSerializer, CrearCitaSerializer, EditarCitaSerializer
 from django.shortcuts import get_object_or_404, render, redirect
 from datetime import date, datetime
 from django.utils.dateparse import parse_time
@@ -452,3 +452,61 @@ class PanelProfesionalView(APIView):
             "completadas": completadas,
             "detalles": detalles
         })
+
+class EditarCitaView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def put(self, request, pk):
+        user = request.user
+
+        # Solo profesionales pueden editar
+        if not user.is_professional:
+            return Response({"detail": "Solo profesionales pueden editar citas."},
+                            status=status.HTTP_403_FORBIDDEN)
+
+        # Obtener cita
+        cita = get_object_or_404(Cita, pk=pk)
+
+        # Solo puede editar sus propias citas
+        if cita.profesional != user:
+            return Response({"detail": "No puedes editar una cita que no es tuya."},
+                            status=status.HTTP_403_FORBIDDEN)
+
+        # No editar canceladas o completadas
+        if cita.estado in ["cancelada", "completada"]:
+            return Response({"detail": "No puedes editar una cita cancelada o completada."},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        # Serializador
+        serializer = EditarCitaSerializer(cita, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+
+        nueva_fecha = serializer.validated_data.get("fecha", cita.fecha)
+        nueva_hora = serializer.validated_data.get("hora", cita.hora)
+
+        # No permitir fechas pasadas
+        if nueva_fecha < date.today():
+            return Response({"detail": "No puedes mover una cita a una fecha pasada."},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        if nueva_fecha == date.today() and nueva_hora < datetime.now().time():
+            return Response({"detail": "No puedes mover la cita a una hora pasada."},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        # Evitar choques con otras citas
+        choque = Cita.objects.filter(
+            profesional=user,
+            fecha=nueva_fecha,
+            hora=nueva_hora,
+            estado__in=["pendiente", "confirmada"]
+        ).exclude(id=cita.id).exists()
+
+        if choque:
+            return Response({"detail": "Ya tienes una cita en esa fecha y hora."},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        # Guardar cambios
+        serializer.save()
+
+        return Response({"detail": "Cita actualizada correctamente.", "cita": serializer.data},
+                        status=status.HTTP_200_OK)

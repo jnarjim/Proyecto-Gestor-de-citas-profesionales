@@ -12,6 +12,7 @@ from .views import (
     CitaDetalleView,
     HistorialCitasView,
     PanelProfesionalView,
+    EditarCitaView,
 )
 
 urlpatterns = [
@@ -26,4 +27,5 @@ urlpatterns = [
     path('disponibles/', CitasDisponiblesGlobalView.as_view(), name='citas_disponibles_global'),
     path('historial/', HistorialCitasView.as_view(), name='historial_citas_api'),
     path('panel/', PanelProfesionalView.as_view(), name='panel_profesional_api'),
+    path('<int:pk>/editar/', EditarCitaView.as_view(), name='editar_cita'),
 ]

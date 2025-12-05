@@ -1,3 +1,4 @@
+let citaActual = null;
 async function getCita(citaId, token) {
     const url = `/api/citas/${citaId}/`;
 
@@ -162,19 +163,33 @@ function configurarBotones(cita, perfil) {
     const btnCancelar = document.getElementById('btn-cancelar');
     const btnCompletar = document.getElementById('btn-completar');
     const btnEliminar = document.getElementById('btn-eliminar');
+    const btnEditar = document.getElementById('btn-editar');
 
-    if (!btnReservar || !btnCancelar || !btnCompletar || !btnEliminar) {
+    if (!btnReservar || !btnCancelar || !btnCompletar || !btnEliminar || !btnEditar) {
         console.error('Algunos botones no se encontraron en el DOM');
         return;
     }
 
+    // Ocultar todos los botones por defecto
     btnReservar.classList.add('hidden');
     btnCancelar.classList.add('hidden');
     btnCompletar.classList.add('hidden');
     btnEliminar.classList.add('hidden');
+    btnEditar.classList.add('hidden');
+
+    // Guardar cita actual para el modal de edición
+    citaActual = cita;
 
     if (perfil.is_professional) {
         if (cita.profesional && cita.profesional.id === perfil.id) {
+
+            // Botón EDITAR - solo para citas pendientes o confirmadas
+            if (cita.estado === 'pendiente' || cita.estado === 'confirmada') {
+                btnEditar.classList.remove('hidden');
+                btnEditar.onclick = () => abrirModalEditar(cita);
+            }
+
+            // Botón CANCELAR
             if (cita.estado === 'pendiente' || cita.estado === 'confirmada') {
                 btnCancelar.classList.remove('hidden');
                 btnCancelar.onclick = () => showConfirmation(
@@ -184,6 +199,7 @@ function configurarBotones(cita, perfil) {
                 );
             }
 
+            // Botón COMPLETAR
             if (cita.estado === 'confirmada') {
                 btnCompletar.classList.remove('hidden');
                 btnCompletar.onclick = () => showConfirmation(
@@ -193,6 +209,7 @@ function configurarBotones(cita, perfil) {
                 );
             }
 
+            // Botón ELIMINAR
             btnEliminar.classList.remove('hidden');
             btnEliminar.onclick = () => showConfirmation(
                 '¿Estás seguro de que deseas eliminar esta cita?',
@@ -202,6 +219,7 @@ function configurarBotones(cita, perfil) {
             );
         }
     } else {
+        // Código para clientes (sin cambios)
         if (!cita.cliente && cita.estado === 'pendiente') {
             btnReservar.classList.remove('hidden');
             btnReservar.onclick = () => showConfirmation(
@@ -410,6 +428,160 @@ function showConfirmation(title, message, action, isDangerous = false) {
         }
     };
 }
+
+function abrirModalEditar(cita) {
+    const modal = document.getElementById('modal-editar');
+    const fechaInput = document.getElementById('edit-fecha');
+    const horaInput = document.getElementById('edit-hora');
+
+    // Pre-llenar los campos con los valores actuales
+    fechaInput.value = cita.fecha;
+    horaInput.value = cita.hora;
+
+    // Establecer fecha mínima (hoy)
+    const hoy = new Date().toISOString().split('T')[0];
+    fechaInput.setAttribute('min', hoy);
+
+    // Mostrar modal
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+}
+
+// Función para cerrar el modal
+function cerrarModalEditar() {
+    const modal = document.getElementById('modal-editar');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+}
+
+// Función para guardar los cambios
+async function guardarEdicion() {
+    const fechaInput = document.getElementById('edit-fecha');
+    const horaInput = document.getElementById('edit-hora');
+    const btnGuardar = document.getElementById('btn-guardar-editar');
+
+    const nuevaFecha = fechaInput.value;
+    const nuevaHora = horaInput.value;
+
+    // Validaciones básicas
+    if (!nuevaFecha || !nuevaHora) {
+        toast.error('Por favor, completa todos los campos');
+        return;
+    }
+
+    // Validar que no sea fecha pasada
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+    const fechaSeleccionada = new Date(nuevaFecha);
+
+    if (fechaSeleccionada < hoy) {
+        toast.error('No puedes establecer una fecha pasada');
+        return;
+    }
+
+    // Si es hoy, validar que no sea hora pasada
+    const fechaHoraSeleccionada = new Date(`${nuevaFecha}T${nuevaHora}`);
+    if (fechaHoraSeleccionada < new Date()) {
+        toast.error('No puedes establecer una fecha u hora pasada');
+        return;
+    }
+
+    // Deshabilitar botón durante la petición
+    btnGuardar.disabled = true;
+    const textoOriginal = btnGuardar.textContent;
+    btnGuardar.innerHTML = `
+        <svg class="animate-spin h-5 w-5 inline mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        Guardando...
+    `;
+
+    const token = localStorage.getItem('access');
+
+    try {
+        const res = await fetch(`/api/citas/${citaActual.id}/editar/`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                fecha: nuevaFecha,
+                hora: nuevaHora
+            })
+        });
+
+        const data = await res.json();
+
+        if (res.status === 401) {
+            toast.error('Sesión expirada. Por favor, inicia sesión');
+            setTimeout(() => window.location.href = '/login/', 2000);
+            return;
+        }
+
+        if (res.ok) {
+            toast.success(data.detail || 'Cita actualizada correctamente');
+            cerrarModalEditar();
+
+            // Recargar la página después de 1 segundo
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            // Mostrar errores específicos
+            if (data.detail) {
+                toast.error(data.detail);
+            } else if (data.fecha) {
+                toast.error(`Error en fecha: ${Array.isArray(data.fecha) ? data.fecha[0] : data.fecha}`);
+            } else if (data.hora) {
+                toast.error(`Error en hora: ${Array.isArray(data.hora) ? data.hora[0] : data.hora}`);
+            } else {
+                toast.error('No se pudo actualizar la cita');
+            }
+
+            btnGuardar.disabled = false;
+            btnGuardar.textContent = textoOriginal;
+        }
+    } catch (error) {
+        console.error('Error al editar cita:', error);
+        toast.error('Error de conexión al editar la cita');
+        btnGuardar.disabled = false;
+        btnGuardar.textContent = textoOriginal;
+    }
+}
+
+// Event listeners para el modal
+document.addEventListener('DOMContentLoaded', () => {
+    const btnCerrarEditar = document.getElementById('btn-cerrar-editar');
+    const btnGuardarEditar = document.getElementById('btn-guardar-editar');
+    const modalEditar = document.getElementById('modal-editar');
+
+    if (btnCerrarEditar) {
+        btnCerrarEditar.addEventListener('click', cerrarModalEditar);
+    }
+
+    if (btnGuardarEditar) {
+        btnGuardarEditar.addEventListener('click', guardarEdicion);
+    }
+
+    // Cerrar modal al hacer clic fuera
+    if (modalEditar) {
+        modalEditar.addEventListener('click', (e) => {
+            if (e.target === modalEditar) {
+                cerrarModalEditar();
+            }
+        });
+    }
+
+    // Cerrar modal con ESC
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            const modal = document.getElementById('modal-editar');
+            if (modal && !modal.classList.contains('hidden')) {
+                cerrarModalEditar();
+            }
+        }
+    });
+});
 
 async function init() {
     try {
