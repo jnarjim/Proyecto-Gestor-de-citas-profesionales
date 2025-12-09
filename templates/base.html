@@ -385,7 +385,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Redirigir admins a perfil si intentan rutas de cliente
     const rutasCliente = ['/mis-citas/', '/notificaciones/', '/'];
     if (isAdmin && rutasCliente.includes(rutaActual)) {
-        window.location.href = '/perfil/';
+        window.location.href = '/usuarios/admin/dashboard/';
     }
 });
 </script>
