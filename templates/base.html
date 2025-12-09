@@ -6,24 +6,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Gestor de Citas{% endblock %}</title>
 
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 
     <script>
-      // Comprobar si hay token JWT en localStorage
       window.isAuthenticated = !!localStorage.getItem('access');
       console.log("window.isAuthenticated:", window.isAuthenticated);
     </script>
 
-    <!-- JS globales -->
     <script src="{% static 'js/auth.js' %}" defer></script>
     <script src="{% static 'js/notifications.js' %}" defer></script>
-
-    <!-- Alpine.js -->
     <script src="https://unpkg.com/alpinejs@3.12.0/dist/cdn.min.js" defer></script>
 
     <style>
-        /* Animación suave para el menú móvil */
         @keyframes slideDown {
             from {
                 opacity: 0;
@@ -39,12 +33,10 @@
             animation: slideDown 0.3s ease-out;
         }
 
-        /* Gradiente personalizado */
         .gradient-header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
 
-        /* Badge con pulso */
         @keyframes pulse {
             0%, 100% {
                 opacity: 1;
@@ -68,22 +60,18 @@
         }"
 >
 
-    <!-- SPINNER GLOBAL -->
     <div
         x-show="loading"
         x-transition.opacity
         class="fixed inset-0 bg-white/70 flex items-center justify-center z-50"
     >
-        <!-- Spinner circular -->
         <div class="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent"></div>
     </div>
 
-    <!-- Header -->
     <header class="gradient-header shadow-lg">
         <div class="max-w-7xl mx-auto px-4 py-4">
             <div class="flex justify-between items-center">
 
-                <!-- Logo -->
                 <a href="/" class="flex items-center space-x-3 group">
                     <div class="bg-white bg-opacity-20 p-2 rounded-lg group-hover:bg-opacity-30 transition">
                         <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -93,11 +81,11 @@
                     <h1 class="text-2xl font-bold text-white hidden sm:block">Gestor de Citas</h1>
                 </a>
 
-                <!-- Menú Desktop -->
                 <nav x-data="{
                         loggedIn: false,
                         userFirstName: '',
                         isProfessional: false,
+                        isStaff: false,
                         mobileMenuOpen: false,
                         async init() {
                             const perfil = await getProfile();
@@ -105,8 +93,10 @@
                                 this.loggedIn = true;
                                 this.userFirstName = perfil.first_name;
                                 this.isProfessional = perfil.is_professional;
+                                this.isStaff = perfil.is_staff;
                                 localStorage.setItem('user_first_name', perfil.first_name);
                                 localStorage.setItem('is_professional', perfil.is_professional);
+                                localStorage.setItem('is_staff', perfil.is_staff);
                             }
                         },
                         logout() {
@@ -114,51 +104,76 @@
                             localStorage.removeItem('refresh');
                             localStorage.removeItem('user_first_name');
                             localStorage.removeItem('is_professional');
+                            localStorage.removeItem('is_staff');
                             this.loggedIn = false;
-                            window.location.href = '/';
+                            window.location.href = '/login/';
                         }
                     }" x-init="init()" class="flex items-center">
 
                     <!-- Desktop Menu -->
                     <div class="hidden md:flex items-center space-x-2">
-                        <a href="/" class="text-white hover:bg-white hover:bg-opacity-20 px-4 py-2 rounded-lg transition font-medium">
-                            <svg class="w-5 h-5 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
-                            </svg>
-                            Inicio
-                        </a>
 
-                        <template x-if="loggedIn">
-                            <a href="/mis-citas/" class="text-white hover:bg-white hover:bg-opacity-20 px-4 py-2 rounded-lg transition font-medium">
-                                <svg class="w-5 h-5 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
-                                </svg>
-                                Mis Citas
-                            </a>
-                        </template>
-
-                        <template x-if="loggedIn">
-                            <div class="relative">
-                                <a href="/notificaciones/" class="text-white hover:bg-white hover:bg-opacity-20 px-4 py-2 rounded-lg transition font-medium inline-flex items-center">
-                                    <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 16h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                        <!-- MENÚ ADMIN -->
+                        <template x-if="loggedIn && isStaff">
+                            <div class="flex items-center space-x-2">
+                                <a href="/admin-panel/" class="text-white hover:bg-white hover:bg-opacity-20 px-4 py-2 rounded-lg transition font-medium">
+                                    <svg class="w-5 h-5 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
                                     </svg>
-                                    Notificaciones
-                                    <span id="notification-badge"
-                                          class="hidden ml-2 bg-red-500 text-white text-xs rounded-full h-5 min-w-5 px-1.5 flex items-center justify-center font-bold badge-pulse">
-                                        0
-                                    </span>
+                                    Panel Admin
                                 </a>
                             </div>
                         </template>
 
-                        <template x-if="loggedIn">
-                            <a href="/perfil/" class="bg-white bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-lg text-white font-semibold transition shadow-md hover:shadow-lg inline-flex items-center">
-                                <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A7 7 0 1118.879 6.196 7 7 0 015.121 17.804z"></path>
-                                </svg>
-                                Perfil
-                            </a>
+                        <!-- MENÚ CLIENTE -->
+                        <template x-if="loggedIn && !isStaff">
+                            <div class="flex items-center space-x-2">
+                                <a href="/" class="text-white hover:bg-white hover:bg-opacity-20 px-4 py-2 rounded-lg transition font-medium">
+                                    <svg class="w-5 h-5 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                                    </svg>
+                                    Inicio
+                                </a>
+
+                                <a href="/mis-citas/" class="text-white hover:bg-white hover:bg-opacity-20 px-4 py-2 rounded-lg transition font-medium">
+                                    <svg class="w-5 h-5 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                                    </svg>
+                                    Mis Citas
+                                </a>
+
+                                <div class="relative">
+                                    <a href="/notificaciones/" class="text-white hover:bg-white hover:bg-opacity-20 px-4 py-2 rounded-lg transition font-medium inline-flex items-center">
+                                        <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 16h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                                        </svg>
+                                        Notificaciones
+                                        <span id="notification-badge"
+                                              class="hidden ml-2 bg-red-500 text-white text-xs rounded-full h-5 min-w-5 px-1.5 flex items-center justify-center font-bold badge-pulse">
+                                            0
+                                        </span>
+                                    </a>
+                                </div>
+
+                                <a href="/perfil/" class="bg-white bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-lg text-white font-semibold transition shadow-md hover:shadow-lg inline-flex items-center">
+                                    <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A7 7 0 1118.879 6.196 7 7 0 015.121 17.804z"></path>
+                                    </svg>
+                                    Perfil
+                                </a>
+                            </div>
+                        </template>
+
+                        <!-- Usuario NO logueado -->
+                        <template x-if="!loggedIn">
+                            <div class="flex items-center space-x-2">
+                                <a href="/" class="text-white hover:bg-white hover:bg-opacity-20 px-4 py-2 rounded-lg transition font-medium">
+                                    <svg class="w-5 h-5 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                                    </svg>
+                                    Inicio
+                                </a>
+                            </div>
                         </template>
 
                         <!-- Usuario logueado -->
@@ -212,28 +227,50 @@
                          @click.away="mobileMenuOpen = false"
                          class="absolute top-full left-0 right-0 bg-white shadow-lg mt-2 rounded-b-lg md:hidden menu-mobile z-50">
                         <div class="p-4 space-y-2">
-                            <a href="/" class="block text-gray-700 hover:bg-purple-50 px-4 py-3 rounded-lg transition font-medium">
-                                <svg class="w-5 h-5 inline mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
-                                </svg>
-                                Inicio
-                            </a>
 
-                            <template x-if="loggedIn">
-                                <a href="/mis-citas/" class="block text-gray-700 hover:bg-purple-50 px-4 py-3 rounded-lg transition font-medium">
+                            <!-- Admin Mobile -->
+                            <template x-if="loggedIn && isStaff">
+                                <a href="/admin-panel/" class="block text-gray-700 hover:bg-purple-50 px-4 py-3 rounded-lg transition font-medium">
                                     <svg class="w-5 h-5 inline mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
                                     </svg>
-                                    Mis Citas
+                                    Panel Admin
                                 </a>
                             </template>
 
-                            <template x-if="loggedIn">
-                                <a href="/notificaciones/" class="block text-gray-700 hover:bg-purple-50 px-4 py-3 rounded-lg transition font-medium relative">
+                            <!-- Cliente Mobile -->
+                            <template x-if="loggedIn && !isStaff">
+                                <div>
+                                    <a href="/" class="block text-gray-700 hover:bg-purple-50 px-4 py-3 rounded-lg transition font-medium">
+                                        <svg class="w-5 h-5 inline mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                                        </svg>
+                                        Inicio
+                                    </a>
+
+                                    <a href="/mis-citas/" class="block text-gray-700 hover:bg-purple-50 px-4 py-3 rounded-lg transition font-medium">
+                                        <svg class="w-5 h-5 inline mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                                        </svg>
+                                        Mis Citas
+                                    </a>
+
+                                    <a href="/notificaciones/" class="block text-gray-700 hover:bg-purple-50 px-4 py-3 rounded-lg transition font-medium relative">
+                                        <svg class="w-5 h-5 inline mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 16h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                                        </svg>
+                                        Notificaciones
+                                    </a>
+                                </div>
+                            </template>
+
+                            <!-- NO logueado mobile -->
+                            <template x-if="!loggedIn">
+                                <a href="/" class="block text-gray-700 hover:bg-purple-50 px-4 py-3 rounded-lg transition font-medium">
                                     <svg class="w-5 h-5 inline mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 16h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
                                     </svg>
-                                    Notificaciones
+                                    Inicio
                                 </a>
                             </template>
 
@@ -269,12 +306,10 @@
         </div>
     </header>
 
-    <!-- Contenido principal -->
     <main class="flex-1 w-full">
         {% block content %}{% endblock %}
     </main>
 
-    <!-- Footer -->
     <footer class="bg-white shadow-inner border-t border-gray-200 mt-12">
         <div class="max-w-7xl mx-auto px-4 py-6">
             <div class="flex flex-col md:flex-row justify-between items-center">
@@ -289,7 +324,6 @@
         </div>
     </footer>
 
-    <!-- Toast global mejorado -->
     <div
         id="toast-container"
         x-data="{
@@ -321,7 +355,6 @@
         style="display: none;"
     >
         <div class="flex items-center">
-            <!-- Icono según tipo -->
             <div class="mr-3">
                 <svg x-show="type === 'success'" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>

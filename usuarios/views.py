@@ -120,7 +120,27 @@ class GestionSolicitudProfesionalAdminView(generics.UpdateAPIView):
 
 
 class AdminDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
-    template_name = 'usuarios/admin.html'
+    template_name = 'usuarios/admin_panel.html'
 
     def test_func(self):
         return self.request.user.is_staff  # Solo admins pueden entrar
+
+
+class AdminStatsView(APIView):
+    permission_classes = [IsAdminUser]
+
+    def get(self, request):
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+
+        total_usuarios = User.objects.count()
+        profesionales = User.objects.filter(is_professional=True).count()
+
+        from citas.models import Cita
+        total_citas = Cita.objects.count()
+
+        return Response({
+            'totalUsuarios': total_usuarios,
+            'profesionales': profesionales,
+            'totalCitas': total_citas
+        })

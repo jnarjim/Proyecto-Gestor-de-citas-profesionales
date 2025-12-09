@@ -42,5 +42,5 @@ urlpatterns = [
 
     # Admin
     path('admin/', admin.site.urls),
-    path('usuarios/admin/dashboard/', lambda request: render(request, 'usuarios/admin.html'), name='admin_dashboard'),
+    path('usuarios/admin/dashboard/', lambda request: render(request, 'usuarios/admin_panel.html'), name='admin_dashboard'),
 ]

@@ -7,7 +7,8 @@ from .views import (
     MiSolicitudProfesionalView,
     SolicitudesPendientesAdminView,
     GestionSolicitudProfesionalAdminView,
-    AdminDashboardView
+    AdminDashboardView,
+    AdminStatsView
 )
 from rest_framework_simplejwt.views import TokenRefreshView
 
@@ -28,4 +29,5 @@ urlpatterns = [
 
     # Panel de admin
     path('admin/dashboard/', AdminDashboardView.as_view(), name='admin_dashboard'),
+    path('admin/stats/', AdminStatsView.as_view(), name='admin_stats'),
 ]
