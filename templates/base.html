@@ -373,5 +373,23 @@
         </div>
     </div>
 
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const token = localStorage.getItem('access');
+    if (!token) return;
+
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    const isAdmin = payload.is_staff || payload.is_superuser;
+    const rutaActual = window.location.pathname;
+
+    // Redirigir admins a perfil si intentan rutas de cliente
+    const rutasCliente = ['/mis-citas/', '/notificaciones/', '/'];
+    if (isAdmin && rutasCliente.includes(rutaActual)) {
+        window.location.href = '/perfil/';
+    }
+});
+</script>
+
+
 </body>
 </html>
