@@ -1,11 +1,26 @@
 document.addEventListener("DOMContentLoaded", () => {
     const form = document.getElementById("perfil-form");
     const spinner = document.getElementById("perfil-spinner");
+    const saveButton = form.querySelector("button[type='submit']");
 
-    const token = localStorage.getItem("access");
+    let token = localStorage.getItem("access");
     if (!token) {
         window.location.href = "/login/";
         return;
+    }
+
+    // ----------------------------
+    // Función para refrescar token
+    // ----------------------------
+    async function refreshToken() {
+        if (typeof window.refreshToken === "function") {
+            const refreshed = await window.refreshToken();
+            if (refreshed) {
+                token = localStorage.getItem("access");
+                return true;
+            }
+        }
+        return false;
     }
 
     // ----------------------------
@@ -15,14 +30,22 @@ document.addEventListener("DOMContentLoaded", () => {
         spinner.classList.remove("hidden");
 
         try {
-            const res = await fetch("/api/usuarios/me/", {
+            let res = await fetch("/api/usuarios/me/", {
                 headers: { "Authorization": "Bearer " + token }
             });
+
+            // Si token expiró, intentar refrescar
+            if (res.status === 401) {
+                const refreshed = await refreshToken();
+                if (refreshed) return cargarPerfil();
+                window.location.href = "/login/";
+                return;
+            }
 
             const data = await res.json();
 
             if (!res.ok) {
-                toast.error("Error cargando perfil");
+                toast.error(data.detail || "Error cargando perfil");
                 return;
             }
 
@@ -45,6 +68,17 @@ document.addEventListener("DOMContentLoaded", () => {
     cargarPerfil();
 
     // ----------------------------
+    // VALIDACIÓN BÁSICA
+    // ----------------------------
+    function validarDatos(data) {
+        if (!data.first_name.trim() || !data.last_name.trim()) {
+            toast.error("Nombre y apellidos no pueden estar vacíos");
+            return false;
+        }
+        return true;
+    }
+
+    // ----------------------------
     // GUARDAR CAMBIOS
     // ----------------------------
     form.addEventListener("submit", async (e) => {
@@ -57,8 +91,13 @@ document.addEventListener("DOMContentLoaded", () => {
             bio: document.getElementById("bio").value,
         };
 
+        if (!validarDatos(data)) return;
+
+        saveButton.disabled = true;
+        saveButton.textContent = "Guardando...";
+
         try {
-            const res = await fetch("/api/usuarios/me/", {
+            let res = await fetch("/api/usuarios/me/", {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",
@@ -67,16 +106,28 @@ document.addEventListener("DOMContentLoaded", () => {
                 body: JSON.stringify(data),
             });
 
-            const result = await res.json();
+            // Si token expiró, intentar refrescar
+            if (res.status === 401) {
+                const refreshed = await refreshToken();
+                if (refreshed) return form.dispatchEvent(new Event("submit"));
+                window.location.href = "/login/";
+                return;
+            }
+
+            const result = await res.json().catch(() => ({}));
 
             if (res.ok) {
                 toast.success("Perfil actualizado");
             } else {
                 toast.error(result.detail || "Error al guardar cambios");
             }
+
         } catch (err) {
             console.error(err);
             toast.error("Error de conexión");
+        } finally {
+            saveButton.disabled = false;
+            saveButton.textContent = "Guardar Cambios";
         }
     });
 });
