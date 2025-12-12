@@ -146,20 +146,6 @@ class ReservarCitaView(APIView):
         cita.estado = "confirmada"
         cita.save()
 
-        # Notificar al cliente
-        Notificacion.objects.create(
-            receptor=user,
-            mensaje=f"Has reservado la cita con {cita.profesional.first_name} el {cita.fecha} a las {cita.hora}."
-        )
-
-        # Notificar al profesional
-        Notificacion.objects.create(
-            receptor=cita.profesional,
-            emisor=user,
-            tipo="reserva",
-            mensaje=f"{user.first_name} ha reservado tu cita del {cita.fecha} a las {cita.hora}."
-        )
-
         return Response({"detail": "Cita reservada correctamente"}, status=status.HTTP_200_OK)
 
 class CancelarCitaView(APIView):
@@ -291,14 +277,6 @@ class CompletarCitaView(APIView):
         # Completar la cita
         cita.estado = "completada"
         cita.save()
-
-        # Notificar al cliente
-        Notificacion.objects.create(
-            receptor=cita.cliente,
-            emisor=user,
-            tipo="completada",
-            mensaje=f"Tu cita del {cita.fecha} a las {cita.hora} ha sido marcada como completada."
-        )
 
         return Response(
             {"detail": "Cita marcada como completada."},

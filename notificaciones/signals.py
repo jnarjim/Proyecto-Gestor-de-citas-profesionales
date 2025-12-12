@@ -37,6 +37,7 @@ def gestionar_notificaciones_cita(sender, instance, created, **kwargs):
     #   CAMBIO A CONFIRMADA
     # ------------------------
     if cita.estado == "confirmada":
+        # Notificación al profesional
         Notificacion.objects.create(
             receptor=cita.profesional,
             emisor=cita.cliente,
@@ -45,11 +46,21 @@ def gestionar_notificaciones_cita(sender, instance, created, **kwargs):
             mensaje=f"{cita.cliente.first_name} ha reservado la cita del {cita.fecha} a las {cita.hora}.",
         )
 
+        # Notificación al cliente
+        Notificacion.objects.create(
+            receptor=cita.cliente,
+            emisor=cita.profesional,
+            cita=cita,
+            tipo="reserva",
+            mensaje=f"Has reservado la cita con {cita.profesional.first_name} el {cita.fecha} a las {cita.hora}.",
+        )
+
         enviar_notificacion_email(
             usuario=cita.profesional,
             asunto="Nueva reserva confirmada",
             mensaje=f"{cita.cliente.first_name} ha reservado una cita el {cita.fecha} a las {cita.hora}."
         )
+
         return
 
     # ------------------------
