@@ -205,7 +205,7 @@ async function initPage() {
 
     } else {
         // Usuario no logueado
-        document.getElementById("bienvenida").textContent = "¡Bienvenido a Gestor de Citas!";
+        document.getElementById("bienvenida").textContent = "¡Bienvenid@ a Schedly!";
         subtitulo.textContent = "Gestiona tus citas de forma profesional";
         explicacionDiv.classList.remove("hidden");
         contenidoLogueado.classList.add("hidden");
