@@ -46,6 +46,7 @@
 - **TailwindCSS**: Framework CSS moderno y responsivo
 - **Alpine.js**: Interactividad ligera en el cliente
 - **JavaScript**: Consumo de API REST
+- **FullCalendar**: Calendario intuitivo 
 
 ### Backend
 - **Django 5.2**: Framework web principal
@@ -395,10 +396,7 @@ Estado: Pendiente (disponible)
 ## Próximas mejoras
 
 - [ ] **WebSockets** para notificaciones en tiempo real
-- [ ] **Calendario visual** con drag & drop para gestión de citas
-- [ ] **Recordatorios automáticos** por email 24h antes de la cita
 - [ ] **Sistema de valoraciones** para profesionales
 - [ ] **Dashboard con gráficos** de estadísticas avanzadas
 - [ ] **Exportación de agenda** a PDF o iCal
-- [ ] **Integración con Google Calendar**
 - [ ] **App móvil** con React Native
