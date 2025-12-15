@@ -22,3 +22,36 @@ Los objetivos específicos del proyecto son:
 - Aplicar buenas prácticas de desarrollo web tanto en backend como en frontend.
 - Implementar un despliegue profesional utilizando contenedores **Docker** y servicios en la nube.
 - Servir como proyecto integrador de varias asignaturas del ciclo, poniendo en práctica conocimientos de desarrollo, diseño y despliegue de aplicaciones web.
+
+## Funcionalidades principales
+
+### Gestión de usuarios
+- Registro de nuevos usuarios con validación de datos.
+- Inicio y cierre de sesión seguro.
+- Gestión de perfiles de usuario, incluyendo información de contacto.
+- Roles diferenciados (profesional / cliente / administrador) con acceso y permisos específicos.
+
+### Gestión de citas
+- Creación de citas por parte del profesional y reservas por parte del cliente.
+- Visualización de citas en un calendario o lista organizada.
+- Edición y cancelación de citas(profesional).
+- Notificaciones por correo electrónico para confirmar o recordar citas.
+
+### Panel profesional / cliente / administrador
+- Panel de control intuitivo para profesionales: ver citas, crearlas, editarlas, gestionar calendario.
+- Panel de cliente: consultar citas reservadas, historial y próximos eventos.
+- Panel administrador: gestionar solicitudes de clientes para convertirse en profesionales, validar roles y supervisar actividad de la plataforma.
+
+### Notificaciones
+- Sistema de alertas por correo electrónico al crear, modificar o cancelar citas.
+- Posibilidad de marcar notificaciones como leídas o eliminar alertas antiguas.
+
+### Seguridad y privacidad
+- Autenticación y autorización segura mediante Django y JWT.
+- Control de acceso según rol.
+- Protección de datos sensibles y cumplimiento de buenas prácticas de seguridad web.
+
+### Otros
+- API REST para integración con otros sistemas o aplicaciones.
+- Soporte para despliegue en la nube usando Docker y AWS EC2.
+- Interfaz web responsiva accesible desde dispositivos móviles y de escritorio.
