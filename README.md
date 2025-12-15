@@ -1,85 +1,404 @@
-# Gestor de Citas Profesionales
+# Schedly
 
-Gestor de Citas Profesionales es un servidor web para organizar y gestionar citas de manera sencilla y eficiente. Desde la programación de citas hasta notificaciones automáticas y gestión de usuarios, esta aplicación cubre cada detalle para que los profesionales solo se preocupen de atender a sus clientes.
+**Schedly** es tu gestor de citas profesional completo. Desde la programación de citas hasta notificaciones automáticas y gestión de usuarios, esta aplicación cubre cada detalle para que los profesionales solo se preocupen de atender a sus clientes.
 
-## Descripción general
+---
 
-El **Gestor de Citas Profesionales** es una aplicación web desarrollada con el framework **Django** cuyo objetivo es facilitar la gestión de citas entre profesionales y clientes de forma sencilla, organizada y accesible desde cualquier dispositivo con conexión a Internet.
-
-La aplicación permite a los usuarios registrarse, iniciar sesión y gestionar citas de manera centralizada, ofreciendo una interfaz web clara e intuitiva. El sistema está pensado para entornos profesionales como consultas, despachos, servicios técnicos o cualquier actividad que requiera la organización de citas o reservas.
-
-El proyecto ha sido diseñado siguiendo una **arquitectura cliente-servidor** y ha sido desplegado en la nube mediante **Docker** y **AWS EC2**, lo que permite su acceso desde el exterior a través de una dirección IP pública.
-
-## Objetivo de la aplicación
-
-El objetivo principal de esta aplicación es **automatizar y simplificar la gestión de citas**, evitando procesos manuales como agendas en papel o herramientas poco especializadas.
-
-Los objetivos específicos del proyecto son:
-
-- Permitir la gestión de usuarios con registro e inicio de sesión seguro.
-- Facilitar la creación, visualización y administración de citas desde una interfaz web.
-- Garantizar la persistencia de los datos mediante una base de datos relacional (**PostgreSQL**).
-- Aplicar buenas prácticas de desarrollo web tanto en backend como en frontend.
-- Implementar un despliegue profesional utilizando contenedores **Docker** y servicios en la nube.
-- Servir como proyecto integrador de varias asignaturas del ciclo, poniendo en práctica conocimientos de desarrollo, diseño y despliegue de aplicaciones web.
-
-## Funcionalidades principales
+## Características destacadas
 
 ### Gestión de usuarios
-- Registro de nuevos usuarios con validación de datos.
-- Inicio y cierre de sesión seguro.
-- Gestión de perfiles de usuario, incluyendo información de contacto.
-- Roles diferenciados (profesional / cliente / administrador) con acceso y permisos específicos.
+- **Registro y autenticación seguros** con JWT
+- **Perfil personalizable** con información de contacto y biografía
+- **Roles diferenciados**: Cliente, Profesional y Administrador
+- **Sistema de solicitudes** para convertirse en profesional
 
 ### Gestión de citas
-- Creación de citas por parte del profesional y reservas por parte del cliente.
-- Visualización de citas en un calendario o lista organizada.
-- Edición y cancelación de citas(profesional).
-- Notificaciones por correo electrónico para confirmar o recordar citas.
+- **Creación de citas disponibles** por parte de profesionales
+- **Reserva de citas** por parte de clientes
+- **Estados de cita**: Pendiente, Confirmada, Cancelada, Completada
+- **Edición y cancelación flexible**
+- **Historial completo** de citas pasadas
+- **Política de reapertura**: Los profesionales pueden permitir que citas canceladas vuelvan a estar disponibles
 
 ### Panel profesional / cliente / administrador
-- Panel de control intuitivo para profesionales: ver citas, crearlas, editarlas, gestionar calendario.
-- Panel de cliente: consultar citas reservadas, historial y próximos eventos.
-- Panel administrador: gestionar solicitudes de clientes para convertirse en profesionales, validar roles y supervisar actividad de la plataforma.
+- **Panel profesional**: Crear, editar y gestionar agenda de citas
+- **Panel cliente**: Reservar, consultar y cancelar citas
+- **Panel administrador**: Gestionar solicitudes de profesionales y supervisar el sistema
+- **Estadísticas en tiempo real**: Citas del día, pendientes y completadas
 
-### Notificaciones
-- Sistema de alertas por correo electrónico al crear, modificar o cancelar citas.
-- Posibilidad de marcar notificaciones como leídas o eliminar alertas antiguas.
+### Sistema de notificaciones
+- **Alertas en tiempo real** sobre reservas, cancelaciones y eventos
+- **Marcar como leídas** o eliminar notificaciones
+- **Notificaciones por evento**: Reserva, cancelación, completado
 
 ### Seguridad y privacidad
-- Autenticación y autorización segura mediante Django y JWT.
-- Control de acceso según rol.
-- Protección de datos sensibles y cumplimiento de buenas prácticas de seguridad web.
+- **Autenticación JWT** (JSON Web Tokens)
+- **Control de acceso** según rol de usuario
+- **Validaciones de negocio** para prevenir conflictos de horarios
+- **Protección de datos sensibles**
+
+---
 
 ## Tecnologías utilizadas
 
 ### Frontend
-- **Django Templates**: para la generación dinámica de HTML en el servidor.
-- **TailwindCSS**: framework CSS moderno para diseño responsivo y estilizado rápido.
-- **JavaScript**: para interactividad en la interfaz y el consumo de API.
-- **HTML**: estructura base del servidor.
+- **Django Templates**: Generación dinámica de HTML
+- **TailwindCSS**: Framework CSS moderno y responsivo
+- **Alpine.js**: Interactividad ligera en el cliente
+- **JavaScript**: Consumo de API REST
 
 ### Backend
-- **Django**: framework principal para desarrollo web en Python.
-- **Django REST Framework (DRF)**: para la creación de API REST.
-- **Django REST Framework Simple JWT**: autenticación mediante tokens JWT.
-- **Middleware personalizado**: para control de roles y redirecciones según permisos.
+- **Django 5.2**: Framework web principal
+- **Django REST Framework**: API RESTful
+- **Django REST Framework Simple JWT**: Autenticación con tokens
+- **Middleware personalizado**: Control de roles y redirecciones
 
 ### Base de datos
-- **PostgreSQL**: sistema de base de datos relacional utilizado para usuarios, citas, roles y demás información persistente.
-- Configuración mediante variables de entorno en `.env`.
+- **PostgreSQL**: Sistema de base de datos relacional
+- **10 índices optimizados** para consultas frecuentes
 
-### Contenedores
-- **Docker**: empaquetado de la aplicación y sus dependencias.
-- **Docker Compose**: orquestación de servicios (web, base de datos) y levantamiento fácil del proyecto.
-- Volúmenes de Docker para persistencia de datos y almacenamiento de archivos estáticos.
+### Despliegue
+- **Docker & Docker Compose**: Contenedorización de servicios
+- **AWS EC2**: Servidor en la nube
+- **Nginx**: Proxy inverso y servidor de archivos estáticos
+- **Gunicorn**: Servidor WSGI de producción
+- **WhiteNoise**: Gestión de archivos estáticos
 
-### Servidor / despliegue
-- **AWS EC2**: instancia de servidor en la nube para hospedar la aplicación.
-- **Nginx**: servidor web para servir contenido estático y como reverse proxy para Gunicorn.
-- **Gunicorn**: servidor WSGI para ejecutar la aplicación Django.
+---
 
-### Otros
-- API REST para integración con otros sistemas o aplicaciones.
-- Soporte para despliegue en la nube usando Docker y AWS EC2.
-- Interfaz web responsiva accesible desde dispositivos móviles y de escritorio.
+## Estructura del proyecto
+
+```
+Schedly/                                    # Raíz del repositorio
+├── gestor_citas/                          # Configuración global de Django
+│   ├── settings.py
+│   ├── urls.py
+│   ├── wsgi.py
+│   └── asgi.py
+│
+├── usuarios/                              # App de usuarios
+│   ├── models.py                          # CustomUser, SolicitudProfesional
+│   ├── views.py                           # Registro, login, perfil, solicitudes
+│   ├── serializers.py
+│   ├── middleware.py                      # Redirección según rol
+│   ├── admin.py
+│   └── migrations/
+│
+├── citas/                                 # App principal de citas
+│   ├── models.py                          # Modelo Cita
+│   ├── views.py                           # CRUD citas, reservas, cancelaciones
+│   ├── serializers.py
+│   ├── admin.py
+│   └── migrations/
+│
+├── notificaciones/                        # App de notificaciones
+│   ├── models.py                          # Modelo Notificacion
+│   ├── views.py                           # Listar, marcar leídas, eliminar
+│   ├── serializers.py
+│   └── migrations/
+│
+├── templates/                             # Plantillas HTML
+│   ├── base.html                          # Plantilla base con nav dinámico
+│   ├── index.html
+│   ├── citas/
+│   ├── notificaciones/
+│   └── usuarios/
+│
+├── static/                                # Archivos estáticos (CSS, JS)
+├── staticfiles/                           # Archivos recopilados (producción)
+│
+├── Dockerfile                             # Imagen Docker
+├── docker-compose.yml                     # Orquestación de servicios
+├── .dockerignore
+├── .env                                   # Variables de entorno
+├── requirements.txt                       # Dependencias Python
+├── manage.py
+└── README.md
+```
+
+---
+
+## Modelo de datos
+
+### Principales modelos
+
+| Modelo | Relaciones principales | Campos clave |
+|--------|------------------------|--------------|
+| **CustomUser** | Citas (como profesional y cliente), Notificaciones | email, is_professional, is_staff, permite_reabrir_citas |
+| **Cita** | Profesional (FK), Cliente (FK opcional), Notificaciones | fecha, hora, duracion, estado |
+| **Notificacion** | Receptor (FK), Emisor (FK), Cita (FK opcional) | tipo, mensaje, leido |
+| **SolicitudProfesional** | Usuario (FK) | estado, acepta_reapertura_citas |
+
+### Diagrama de relaciones
+
+```
+CustomUser (1) ──────< (N) Cita (profesional)
+CustomUser (1) ──────< (N) Cita (cliente)
+CustomUser (1) ──────< (N) Notificacion (receptor)
+Cita (1) ──────< (N) Notificacion
+CustomUser (1) ──────< (N) SolicitudProfesional
+```
+
+### Estados de cita
+1. **Pendiente** - Cita creada sin cliente asignado
+2. **Confirmada** - Cliente ha reservado la cita
+3. **Cancelada** - Cancelada por profesional o cliente
+4. **Completada** - Finalizada y marcada por el profesional
+
+---
+
+## API REST
+
+El sistema cuenta con **27 endpoints** organizados en 3 módulos:
+
+### Usuarios (8 endpoints)
+- `POST /api/usuarios/register/` - Registro de usuarios
+- `POST /api/usuarios/login/` - Login con JWT
+- `GET /api/usuarios/me/` - Ver perfil
+- `PATCH /api/usuarios/me/` - Actualizar perfil
+- `POST /api/usuarios/solicitud-profesional/crear/` - Solicitar ser profesional
+- `GET /api/usuarios/solicitud-profesional/mia/` - Ver estado de solicitud
+- `GET /api/usuarios/solicitud-profesional/pendientes/` - Listar solicitudes (Admin)
+- `PATCH /api/usuarios/solicitud-profesional/gestionar/<id>/` - Aprobar/rechazar (Admin)
+
+### Citas (13 endpoints)
+- `GET /api/citas/disponibles/` - Listar citas disponibles
+- `POST /api/citas/crear/` - Crear cita (Profesional)
+- `POST /api/citas/<id>/reservar/` - Reservar cita (Cliente)
+- `POST /api/citas/<id>/cancelar/` - Cancelar cita
+- `POST /api/citas/<id>/completar/` - Completar cita (Profesional)
+- `POST /api/citas/<id>/eliminar/` - Eliminar cita
+- `PUT /api/citas/<id>/editar/` - Editar cita (Profesional)
+- `GET /api/citas/mis-citas/` - Mis citas activas
+- `GET /api/citas/historial/` - Historial de citas
+- `GET /api/citas/panel-profesional/` - Estadísticas (Profesional)
+- `GET /api/citas/<id>/` - Detalles de cita
+
+### Notificaciones (4 endpoints)
+- `GET /api/notificaciones/` - Listar notificaciones
+- `GET /api/notificaciones/<id>/` - Detalle de notificación
+- `POST /api/notificaciones/<id>/marcar-leida/` - Marcar como leída
+- `DELETE /api/notificaciones/<id>/` - Eliminar notificación
+
+### Autenticación
+- **Tipo**: JWT (JSON Web Tokens)
+- **Access Token**: Válido 5 minutos
+- **Refresh Token**: Válido 1 día
+- **Header**: `Authorization: Bearer <token>`
+
+---
+
+## Instalación y despliegue
+
+### Requisitos previos
+- Docker & Docker Compose
+- Git
+- Cuenta AWS (para despliegue en producción)
+- Clave SSH (para acceso a EC2)
+
+---
+
+### Desarrollo local
+
+1. **Clonar el repositorio:**
+
+```bash
+git clone https://github.com/jnarjim/Proyecto-Gestor-de-citas-profesionales.git
+cd Proyecto-Gestor-de-citas-profesionales
+```
+
+2. **Crear archivo `.env`:**
+
+```env
+# Django
+DEBUG=True
+DJANGO_SECRET_KEY="your-secret-key-here"
+ALLOWED_HOSTS=localhost,127.0.0.1
+
+# Database
+DATABASE_URL=postgresql://postgres:postgres123@db:5432/gestor_citas_db
+DB_NAME=gestor_citas_db
+DB_USER=postgres
+DB_PASSWORD=postgres123
+DB_HOST=db
+DB_PORT=5432
+
+# Email (Opcional)
+EMAIL_HOST_USER=tu-email@gmail.com
+EMAIL_HOST_PASSWORD=tu-password
+```
+
+3. **Levantar servicios con Docker:**
+
+```bash
+docker compose up -d
+```
+
+4. **Aplicar migraciones:**
+
+```bash
+docker compose exec web python manage.py migrate
+```
+
+5. **Crear superusuario:**
+
+```bash
+docker compose exec web python manage.py createsuperuser
+```
+
+6. **Recopilar archivos estáticos:**
+
+```bash
+docker compose exec web python manage.py collectstatic --noinput
+```
+
+7. **Acceder a la aplicación:**
+
+```
+http://localhost:8000
+```
+
+---
+
+### Despliegue en producción (AWS EC2)
+
+#### 1. Crear instancia EC2
+- **AMI**: Ubuntu Server 22.04 LTS
+- **Tipo**: t3.small (recomendado) o t2.micro (free tier)
+- **Security Group**: Permitir puertos 22 (SSH), 80 (HTTP), 443 (HTTPS)
+
+#### 2. Conectar a la instancia
+
+```bash
+ssh -i tu-clave.pem ubuntu@<IP-ELASTICA>
+```
+
+#### 3. Clonar repositorio y configurar
+
+```bash
+git clone https://github.com/jnarjim/Proyecto-Gestor-de-citas-profesionales.git
+cd Proyecto-Gestor-de-citas-profesionales
+```
+
+#### 4. Configurar `.env` para producción
+
+```env
+DEBUG=False
+DJANGO_SECRET_KEY="production-secret-key"
+ALLOWED_HOSTS=<IP-ELASTICA>,tudominio.com
+
+DATABASE_URL=postgresql://postgres:password_seguro@db:5432/gestor_citas_db
+DB_PASSWORD=password_seguro
+```
+
+#### 5. Levantar servicios
+
+```bash
+docker compose up -d
+docker compose exec web python manage.py migrate
+docker compose exec web python manage.py createsuperuser
+docker compose exec web python manage.py collectstatic --noinput
+```
+
+#### 6. Configurar Nginx
+
+```bash
+sudo nano /etc/nginx/sites-available/schedly
+```
+
+```nginx
+server {
+    listen 80;
+    server_name <IP-ELASTICA>;
+
+    location / {
+        proxy_pass http://localhost:8000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+
+    location /static/ {
+        alias /home/ubuntu/Proyecto-Gestor-de-citas-profesionales/staticfiles/;
+    }
+}
+```
+
+```bash
+sudo ln -s /etc/nginx/sites-available/schedly /etc/nginx/sites-enabled/
+sudo rm /etc/nginx/sites-enabled/default
+sudo nginx -t
+sudo systemctl restart nginx
+```
+
+#### 7. Acceder a la aplicación
+
+```
+http://<IP-ELASTICA>
+```
+
+---
+
+## Ejemplo de uso (Paso a paso)
+
+### 1. Registro
+Usuario se registra con email, nombre y contraseña.
+
+### 2. Solicitar ser profesional (Opcional)
+- Usuario solicita convertirse en profesional
+- Admin revisa y aprueba la solicitud
+- Usuario obtiene acceso al panel profesional
+
+### 3. Profesional crea citas
+```
+Cita: "Consulta"
+Fecha: 2025-12-20
+Hora: 10:00
+Duración: 60 minutos
+Estado: Pendiente (disponible)
+```
+
+### 4. Cliente reserva cita
+- Explora citas disponibles
+- Reserva la cita deseada
+- Estado cambia a "Confirmada"
+- Profesional recibe notificación
+
+### 5. Gestión de citas
+- **Cliente** puede cancelar su cita
+- **Profesional** puede editar, cancelar o completar citas
+- Sistema de reapertura: Las citas canceladas pueden volver a estar disponibles
+
+### 6. Notificaciones
+- Alertas automáticas en tiempo real
+- Panel de notificaciones con contador
+- Marcar como leídas o eliminar
+
+## Características técnicas destacadas
+
+### Optimizaciones
+- **10 índices de base de datos** para queries frecuentes
+- **Select_related y prefetch_related** en consultas ORM
+- **WhiteNoise** para servir archivos estáticos eficientemente
+
+### Seguridad
+- **Autenticación JWT** con tokens de corta duración
+- **Validación de negocio** en cada operación
+- **Control de acceso basado en roles**
+- **Protección CSRF** en formularios
+
+### Arquitectura
+- **API RESTful** completamente funcional
+- **Separación de responsabilidades** (3 apps Django)
+- **Middleware personalizado** para redirecciones según rol
+- **Docker Compose** para orquestación de servicios
+
+## Próximas mejoras
+
+- [ ] **WebSockets** para notificaciones en tiempo real
+- [ ] **Calendario visual** con drag & drop para gestión de citas
+- [ ] **Recordatorios automáticos** por email 24h antes de la cita
+- [ ] **Sistema de valoraciones** para profesionales
+- [ ] **Dashboard con gráficos** de estadísticas avanzadas
+- [ ] **Exportación de agenda** a PDF o iCal
+- [ ] **Integración con Google Calendar**
+- [ ] **App móvil** con React Native
