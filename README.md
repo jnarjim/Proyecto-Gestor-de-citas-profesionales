@@ -1,6 +1,6 @@
 # Gestor de Citas Profesionales
 
-Gestor de Citas Profesionales es tu asistente digital para organizar y gestionar citas de manera sencilla y eficiente. Desde la programación de citas hasta notificaciones automáticas y gestión de usuarios, esta aplicación cubre cada detalle para que los profesionales solo se preocupen de atender a sus clientes.
+Gestor de Citas Profesionales es un servidor web para organizar y gestionar citas de manera sencilla y eficiente. Desde la programación de citas hasta notificaciones automáticas y gestión de usuarios, esta aplicación cubre cada detalle para que los profesionales solo se preocupen de atender a sus clientes.
 
 ## Descripción general
 
@@ -50,6 +50,34 @@ Los objetivos específicos del proyecto son:
 - Autenticación y autorización segura mediante Django y JWT.
 - Control de acceso según rol.
 - Protección de datos sensibles y cumplimiento de buenas prácticas de seguridad web.
+
+## Tecnologías utilizadas
+
+### Frontend
+- **Django Templates**: para la generación dinámica de HTML en el servidor.
+- **TailwindCSS**: framework CSS moderno para diseño responsivo y estilizado rápido.
+- **JavaScript**: para interactividad en la interfaz y el consumo de API.
+- **HTML**: estructura base del servidor.
+
+### Backend
+- **Django**: framework principal para desarrollo web en Python.
+- **Django REST Framework (DRF)**: para la creación de API REST.
+- **Django REST Framework Simple JWT**: autenticación mediante tokens JWT.
+- **Middleware personalizado**: para control de roles y redirecciones según permisos.
+
+### Base de datos
+- **PostgreSQL**: sistema de base de datos relacional utilizado para usuarios, citas, roles y demás información persistente.
+- Configuración mediante variables de entorno en `.env`.
+
+### Contenedores
+- **Docker**: empaquetado de la aplicación y sus dependencias.
+- **Docker Compose**: orquestación de servicios (web, base de datos) y levantamiento fácil del proyecto.
+- Volúmenes de Docker para persistencia de datos y almacenamiento de archivos estáticos.
+
+### Servidor / despliegue
+- **AWS EC2**: instancia de servidor en la nube para hospedar la aplicación.
+- **Nginx**: servidor web para servir contenido estático y como reverse proxy para Gunicorn.
+- **Gunicorn**: servidor WSGI para ejecutar la aplicación Django.
 
 ### Otros
 - API REST para integración con otros sistemas o aplicaciones.
